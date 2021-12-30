@@ -1,6 +1,6 @@
 BEGIN;
 
-DROP TABLE IF EXISTS survey_snapshot,protocols_surveys,clinics,questions,matrix,surveys,protocols,clients,clients_surveys,questions_surveys,answers,treatment CASCADE;
+DROP TABLE IF EXISTS protocols_surveys,clinics,questions,matrix,surveys,protocols,clients,clients_surveys,questions_surveys,answers,treatment CASCADE;
 DROP TYPE IF EXISTS treatment_status CASCADE;
 
 CREATE TYPE treatment_status AS ENUM ('on-going', 'finished');
@@ -73,7 +73,8 @@ CREATE TABLE treatment(
     client_id INTEGER REFERENCES clients(id),
     protocol_id INTEGER REFERENCES protocols(id),
     start_date DATE,
-    status treatment_status
+    status treatment_status,
+    survey_snapshot json
 );
 
 CREATE TABLE answers (
@@ -97,13 +98,6 @@ CREATE TABLE questions_surveys(
     id SERIAL PRIMARY KEY,
     question_id INTEGER REFERENCES questions(id),
     survey_id INTEGER REFERENCES surveys(id)
-);
-
-CREATE TABLE survey_snapshot(
-    id SERIAL PRIMARY KEY,
-    client_id INTEGER REFERENCES clients(id),
-    survey_id INTEGER REFERENCES surveys(id),
-    survey json
 );
 
 INSERT INTO matrix (id,title,columns,answers,instructions) VALUES(
