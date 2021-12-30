@@ -7,7 +7,6 @@ export const fetchQuestionsBySurveyId = (surveyId: number) => {
       [surveyId]
     )
     .then((response) => {
-      console.log(response.rows);
       return response.rows;
     });
 };
@@ -16,7 +15,6 @@ export const fetchMatrixById = (matrixId: number) => {
   return db
     .query("SELECT * FROM matrix WHERE id = $1", [matrixId])
     .then((response) => {
-      console.log(response.rows);
       return response.rows;
     });
 };
