@@ -91,7 +91,6 @@ CREATE TABLE clients_surveys(
     is_done BOOLEAN,
     is_partially_done BOOLEAN,
     has_missed BOOLEAN,
-    finished_time varchar(5) DEFAULT '3h',
     survey_snapshot json
 );
 
