@@ -1,6 +1,6 @@
 const matrixData = [
   {
-    id: "matrixblahid",
+    id: "1",
     title: "do you feel bothered from:",
     columns: ["Poorly", "Semi-Poorly", "Avarage", "Semi-Strongly", "Strongly"],
     answers: ["0", "1", "2", "3", "4"],
@@ -12,8 +12,7 @@ const matrixData = [
 const questionsData = [
   {
     id: "1",
-    question:
-      "Feeling very upset when something reminds you of the stressful experience?",
+    question: "Feeling very upset when something reminds you of the stressful experience?",
     type: "matrix",
     group: "group_xyz",
     matrix_id: "1",
@@ -21,8 +20,7 @@ const questionsData = [
   },
   {
     id: "2",
-    question:
-      "Trouble remembering important parts of the stressful experience?",
+    question: "Trouble remembering important parts of the stressful experience?",
     type: "matrix",
     group: "group_xyz",
     matrix_id: "1",
@@ -46,8 +44,7 @@ const questionsData = [
   },
   {
     id: "5",
-    question:
-      "Which choice of the choices below you think it will impact you stress the most?",
+    question: "Which choice of the choices below you think it will impact you stress the most?",
     type: "multiple_choice",
     group: "group_xyz_multi1",
     matrix_id: "",
@@ -109,5 +106,49 @@ const questionsData = [
 ];
 
 const fetchSurveyData = () => {
-  return {};
+  let survey = [];
+  // questionsData.map((data) => {});
+  // if (matrixData.length != 0) {
+  //   survey = matrixData.map((data) => {
+  //     data["type"] = "matrix";
+  //     data["questions"] = [];
+  //   });
+  // }
+  questionsData.map((data, index) => {
+    if (data.type === "matrix") {
+      const matrix = matrixData.find((element) => element["id"] === data.matrix_id);
+      const index1 = survey.findIndex((element) => element["group"] === data.group);
+      if (index1 === -1) {
+        if (matrix) {
+          const questionsArr = [];
+          for (let i = index; i < questionsData.length; i++) {
+            if (questionsData[i].group === data.group) {
+              questionsArr.push({ id: questionsData[i].id, question: questionsData[i].question });
+            }
+          }
+          survey.push({
+            type: data.type,
+            group: data.group,
+            title: matrix.title,
+            columns: matrix.columns,
+            answers: matrix.answers,
+            instructions: matrix.instructions,
+            questions: questionsArr,
+          });
+        } else {
+          console.log("no matrix found");
+        }
+      } else {
+        console.log("matrix already in servey");
+      }
+    } else if (data.type === "multiple_choice") {
+      survey.push({ id: data.id, type: data.type, question: data.question, ...data["extra_data"].multipleChoice });
+    } else {
+      survey.push({ id: data.id, type: data.type, question: data.question, placeholder: data.extra_data.openText.inputPlaceholder });
+    }
+  });
+  survey.map((element) => delete element.group);
+  console.log(survey);
+  return { survey };
 };
+fetchSurveyData();
