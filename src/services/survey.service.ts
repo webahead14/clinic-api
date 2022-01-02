@@ -12,8 +12,7 @@ const matrixData = [
 const questionsData = [
   {
     id: "1",
-    question:
-      "Feeling very upset when something reminds you of the stressful experience?",
+    question: "Feeling very upset when something reminds you of the stressful experience?",
     type: "matrix",
     group: "group_xyz",
     matrix_id: "1",
@@ -21,8 +20,7 @@ const questionsData = [
   },
   {
     id: "2",
-    question:
-      "Trouble remembering important parts of the stressful experience?",
+    question: "Trouble remembering important parts of the stressful experience?",
     type: "matrix",
     group: "group_xyz",
     matrix_id: "1",
@@ -46,8 +44,7 @@ const questionsData = [
   },
   {
     id: "5",
-    question:
-      "Which choice of the choices below you think it will impact you stress the most?",
+    question: "Which choice of the choices below you think it will impact you stress the most?",
     type: "multiple_choice",
     group: "group_xyz_multi1",
     matrix_id: "",
@@ -109,30 +106,24 @@ const questionsData = [
 ];
 
 const fetchSurveyData = () => {
+  const groupsFound = [];
   let survey = questionsData
-    .map((data, index) => {
+    .map((data) => {
       if (data.type === "matrix") {
-        const matrix = matrixData.find(
-          (element) => element["id"] === data.matrix_id
-        );
+        const matrix = matrixData.find((element) => element["id"] === data.matrix_id);
+        const isGroupFound = groupsFound.findIndex((element) => element === data.group);
 
-        const index1 = survey.findIndex(
-          (element) => element["group"] === data.group
-        );
-
-        if (index1 !== -1 || !matrix) {
+        if (isGroupFound !== -1 || !matrix) {
           return null;
         }
-
-        const questionsArr = [];
-        for (let i = index; i < questionsData.length; i++) {
-          if (questionsData[i].group === data.group) {
-            questionsArr.push({
-              id: questionsData[i].id,
-              question: questionsData[i].question,
-            });
-          }
-        }
+        groupsFound.push(data.group);
+        const questionsArr = questionsData
+          .map((element) => {
+            if (element.group === data.group) {
+              return { id: element.id, question: element.question };
+            }
+          })
+          .filter((x) => x);
 
         return {
           type: data.type,
@@ -167,6 +158,6 @@ const fetchSurveyData = () => {
     })
     .filter((x) => x);
 
-  return { survey };
+  return survey;
 };
-fetchSurveyData();
+console.log(fetchSurveyData());
