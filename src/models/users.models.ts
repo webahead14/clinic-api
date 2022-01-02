@@ -21,5 +21,13 @@ export function newClient(data) {
   );
 }
 
+export function getClient(data) {
+  const gov_id = [data.gov_id];
+  return db
+    .query("SELECT * FROM clients WHERE gov_id = $1", gov_id)
+    .then((client) => {
+      return client.rows;
+    });
+}
 //create client
 //fetch client
