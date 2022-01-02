@@ -3,6 +3,11 @@ import ApiError from "../utils/ApiError";
 import httpStatus from "http-status";
 import catchAsync from "../utils/catchAsync";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
+const SECRET = process.env.JWT_SECRET;
 
 const allClients = catchAsync(async (req, res) => {
   const clients = await fetchClients();
@@ -50,11 +55,11 @@ const loginClient = catchAsync(async (req: any, res: any) => {
     if (!match) {
       res.send({ status: "wrong password" });
     } else {
-      // const token = jwt.sign({ gov_id: gov_id, name: client[0].name }, SECRET);
+      const token = jwt.sign({ gov_id: gov_id, name: client[0].name }, SECRET);
       const response = {
         name: client[0].name,
         gov_id: client[0].gov_id,
-        // access_token: token,
+        access_token: token,
       };
       res.status(httpStatus.OK).send(response);
     }
