@@ -160,4 +160,4 @@ const fetchSurveyData = () => {
 
   return survey;
 };
-console.log(fetchSurveyData());
+export default fetchSurveyData;
