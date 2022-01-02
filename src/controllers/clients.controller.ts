@@ -28,9 +28,9 @@ const loginClient = catchAsync(async (req: any, res: any) => {
   if (!client.length) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No client found");
   }
-  
+
   const dbPassword = client.passcode;
-  
+
   bcrypt.compare(passcode, dbPassword).then((match) => {
     if (!match) {
       throw new ApiError(httpStatus.BAD_REQUEST, "Wrong password");
@@ -48,9 +48,9 @@ const loginClient = catchAsync(async (req: any, res: any) => {
       access_token: token,
     };
     res.status(httpStatus.OK).send(response);
-
   });
 });
+
 export default {
   list: allClients,
   login: loginClient,
