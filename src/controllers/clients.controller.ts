@@ -1,4 +1,4 @@
-import { fetchClients } from "../models/users.models";
+import { fetchClients } from "../models/clients.models";
 import ApiError from "../utils/ApiError";
 import httpStatus from "http-status";
 import catchAsync from "../utils/catchAsync";

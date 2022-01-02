@@ -6,16 +6,17 @@ export function fetchClients() {
   });
 }
 
-export function attachSurveysToClient(protocolId, clientId) {}
+export function fetchSurveysByProtocolId(protocolId) {
+  return db
+    .query(
+      "SELECT * FROM protocols_surveys ps INNER JOIN surveys ON survey.id = ps.survey_id WHERE ps.protocol_id = $1",
+      protocolId
+    )
+    .then((surveys) => surveys.rows);
+}
 
-export async function createTreatment(data) {
-  const govId = await addClient(data.client);
-  const treatment = [govId, client.protocolId, client.startDate];
-  return db.query(
-    `INSERT INTO treatment (client_id,protocol_id,start_date) 
-    VALUES ($1,$2,$3)`,
-    treatment
-  );
+export function attachSurveysToClient(protocolId, clientId) {
+  return fetchSurveysByProtocolId(protocolId).then((surveys) => {});
 }
 
 //create client
@@ -44,5 +45,14 @@ export function addClient(client) {
     .then((govId) => {
       return govId.rows[0].id;
     });
+}
+
+export function createTreatment(govId, protocolId, startDate) {
+  const treatment = [govId, protocolId, startDate];
+  return db.query(
+    `INSERT INTO treatment (client_id,protocol_id,start_date) 
+    VALUES ($1,$2,$3)`,
+    treatment
+  );
 }
 //fetch client
