@@ -19,7 +19,7 @@ const allClients = catchAsync(async (req: any, res: any) => {
 //login client
 const loginClient = catchAsync(async (req: any, res: any) => {
   const { gov_id, passcode } = req.body;
-
+  console.log(req.body);
   if (!gov_id || !passcode) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Missing data");
   }

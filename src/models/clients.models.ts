@@ -18,13 +18,13 @@ export function getClient(data) {
 export function attachSurveysToClient(protocolId, clientId) {}
 
 export async function createTreatment(data) {
-  const govId = await addClient(data.client);
-  const treatment = [govId, client.protocolId, client.startDate];
-  return db.query(
-    `INSERT INTO treatment (client_id,protocol_id,start_date) 
-    VALUES ($1,$2,$3)`,
-    treatment
-  );
+  // const govId = await addClient(data.client);
+  // const treatment = [govId, client.protocolId, client.startDate];
+  // return db.query(
+  //   `INSERT INTO treatment (client_id,protocol_id,start_date)
+  //   VALUES ($1,$2,$3)`,
+  //   treatment
+  // );
 }
 
 //create client

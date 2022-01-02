@@ -119,10 +119,10 @@ INSERT INTO clinics VALUES (
 
 INSERT INTO surveys VALUES 
     (1,1,'PCL-5'),
-    (2,1,'PSG-1');
-    (3,1,'ELB-3');
-    (4,1,'SGN-2');
-    (5,1,'LMB-1');
+    (2,1,'PSG-1'),
+    (3,1,'ELB-3'),
+    (4,1,'SGN-2'),
+    (5,1,'LMB-1'),
     (6,1,'RMB-1'
 );
 
