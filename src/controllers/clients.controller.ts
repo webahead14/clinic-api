@@ -10,19 +10,10 @@ const allClients = catchAsync(async (req, res) => {
 });
 
 //add client
-const addClient = catchAsync(async (req: Request, res: Response) => {
-  const { condition, phone, email, name, gender, startDate, protocol } =
-    req.body;
+const addClient = catchAsync(async (req: any, res: any) => {
+  const { condition, phone, email, name, gender, startDate, protocol } = req.body;
 
-  if (
-    !condition ||
-    !phone ||
-    !email ||
-    !name ||
-    !gender ||
-    !startDate ||
-    !protocol
-  ) {
+  if (!condition || !phone || !email || !name || !gender || !startDate || !protocol) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Missing data");
   }
 
