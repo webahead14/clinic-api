@@ -8,6 +8,6 @@ const router = express.Router();
 router.get("/", generalController.home);
 router.get("/client/survey/:id", generalController.survey.getSurveyById);
 router.get("/clients", clientController.list);
-router.post("/clientLogin", clientController.login);
+router.post("/client/login", clientController.login);
 
 export default router;
