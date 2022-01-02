@@ -1,4 +1,4 @@
-import { fetchClients, newClient, getClient } from "../models/users.models";
+import { fetchClients, getClient } from "../models/clients.models";
 import ApiError from "../utils/ApiError";
 import httpStatus from "http-status";
 import catchAsync from "../utils/catchAsync";
@@ -9,33 +9,11 @@ import dotenv from "dotenv";
 dotenv.config();
 const SECRET = process.env.JWT_SECRET;
 
-const allClients = catchAsync(async (req, res) => {
+const allClients = catchAsync(async (req: any, res: any) => {
   const clients = await fetchClients();
 
   res.status(httpStatus.OK).send(clients);
 });
-
-//add client
-const addClient = catchAsync(async (req: any, res: any) => {
-  const { condition, phone, email, name, gender, startDate, protocol } =
-    req.body;
-
-  if (
-    !condition ||
-    !phone ||
-    !email ||
-    !name ||
-    !gender ||
-    !startDate ||
-    !protocol
-  ) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Missing data");
-  }
-
-  await newClient(req.body);
-  res.status(httpStatus.OK).send({ success: true });
-});
-//hide client
 
 //edit client
 //login client
@@ -67,6 +45,5 @@ const loginClient = catchAsync(async (req: any, res: any) => {
 });
 export default {
   list: allClients,
-  add: addClient,
   login: loginClient,
 };
