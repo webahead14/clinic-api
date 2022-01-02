@@ -56,10 +56,10 @@ CREATE TABLE clients (
     passcode text,
     time_passcode text,
     time_passcode_expiry DATE,
-    client_id INTEGER,
-    condition json,
+    gov_id INTEGER,
+    condition varchar(50),
     deleted boolean,
-    phone INTEGER,
+    phone varchar(13),
     email varchar(100),
     name varchar(36),
     gender varchar(50)
@@ -70,8 +70,7 @@ CREATE TABLE treatment(
     client_id INTEGER REFERENCES clients(id),
     protocol_id INTEGER REFERENCES protocols(id),
     start_date DATE,
-    status treatment_status,
-    survey_snapshot json
+    status treatment_status
 );
 
 CREATE TABLE answers (
@@ -84,11 +83,12 @@ CREATE TABLE answers (
 CREATE TABLE clients_surveys(
     id SERIAL PRIMARY KEY,
     client_id INTEGER REFERENCES clients(id),
+    survey_id INTEGER REFERENCES surveys(id),
     treatment_id INTEGER REFERENCES treatment(id),
     is_done BOOLEAN,
     is_partially_done BOOLEAN,
     has_missed BOOLEAN,
-    finished_time DATE
+    survey_snapshot json
 );
 
 CREATE TABLE questions_surveys(
@@ -132,5 +132,19 @@ INSERT INTO questions_surveys (id,question_id,survey_id) VALUES
     (6,6,1),
     (7,7,1
 );
+
+INSERT INTO protocols(id,clinic_id,name,condition) VALUES
+(1,1,'PTSD','PTSD');
+
+INSERT INTO clients (id,passcode,time_passcode,time_passcode_expiry,gov_id,condition,deleted,phone,email,name,gender)
+VALUES
+(1,'M4R70','M4R70', '2022-01-16','211622600','PTSD',false,'0525080784','durd2001@gmail.com','George Joubran', 'male');
+
+INSERT INTO treatment(id,client_id,protocol_id,start_date,status) VALUES
+(1,1,1,'2022-01-16','on-going');
+
+INSERT INTO clients_surveys(id,client_id,survey_id,treatment_id,is_done,is_partially_done,has_missed,survey_snapshot)
+VALUES
+(1,1,1,1,false,false,false,'[{"type":"matrix","title":"Do you feel bothered from:","columns":["Poorly","Semi-Poorly","Avarage","Semi-Strongly","Strongly"],"answers":["0","1","2","3","4"],"instructions":"Below is a list of problems and complaints that people sometimes have in response to stressful life experiences. How much you have been bothered by that problem IN THE LAST MONTH.","questions":[{"id":"1","question":"Feeling very upset when something reminds you of the stressful experience?"},{"id":"2","question":"Trouble remembering important parts of the stressful experience?"},{"id":"3","question":"Loss of interest in activities that you used to enjoy?"},{"id":"4","question":"Irritable behaviour, angry outbursts, or acting aggressively??"}]},{"id":"5","type":"multiple_choice","choice_type":"Radio","question":"Which choice of the choices below you think it will impact you stress the most?","answers":[{"text":"Smoke"},{"text":"Exercide"},{"text":"Drink"},{"text":"Eat"}]},{"id":"6","type":"multiple_choice","choice_type":"Checkbox","question":"Mark the type of injuries you''ve encountered lately:","answers":[{"text":"Physical Pain"},{"text":"Mental Pain"},{"text":"Spiritual Pain"}]},{"type":"open_text","id":"7","question":"Anything else?","placeholder":"Enter your answer here"}]');
 
 COMMIT;
