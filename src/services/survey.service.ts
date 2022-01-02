@@ -1,146 +1,35 @@
-const matrixData = [
-  {
-    id: "1",
-    title: "do you feel bothered from:",
-    columns: ["Poorly", "Semi-Poorly", "Avarage", "Semi-Strongly", "Strongly"],
-    answers: ["0", "1", "2", "3", "4"],
-    instructions:
-      "Below is a list of problems and complaints that people sometimes have in response to stressful life experiences. How much you have been bothered by that problem IN THE LAST MONTH.",
-  },
-];
+import { fetchMatrixById, fetchQuestionsBySurveyId } from "../models/survey";
 
-const questionsData = [
-  {
-    id: "1",
-    question:
-      "Feeling very upset when something reminds you of the stressful experience?",
-    type: "matrix",
-    group: "group_xyz",
-    matrix_id: "1",
-    extra_data: {},
-  },
-  {
-    id: "2",
-    question:
-      "Trouble remembering important parts of the stressful experience?",
-    type: "matrix",
-    group: "group_xyz",
-    matrix_id: "1",
-    extra_data: {},
-  },
-  {
-    id: "3",
-    question: "Loss of interest in activities that you used to enjoy?",
-    type: "matrix",
-    group: "group_xyz",
-    matrix_id: "1",
-    extra_data: {},
-  },
-  {
-    id: "4",
-    question: "Irritable behaviour, angry outbursts, or acting aggressively?",
-    type: "matrix",
-    group: "group_xyz",
-    matrix_id: "1",
-    extra_data: {},
-  },
-  {
-    id: "5",
-    question:
-      "Which choice of the choices below you think it will impact you stress the most?",
-    type: "multiple_choice",
-    group: "group_xyz_multi1",
-    matrix_id: "",
-    extra_data: {
-      multipleChoice: {
-        choiceType: "Radio",
-        answers: [
-          {
-            text: "Smoke",
-          },
-          {
-            text: "Exercise",
-          },
-          {
-            text: "Drink alcohol",
-          },
-          {
-            text: "Eat",
-          },
-        ],
-      },
-    },
-  },
-  {
-    id: "6",
-    question: "Mark the type of pains you've encountered lately:",
-    type: "multiple_choice",
-    group: "group_xyz_multi2",
-    matrix_id: "",
-    extra_data: {
-      multipleChoice: {
-        choiceType: "Checkbox",
-        answers: [
-          {
-            text: "Physical Pain",
-          },
-          {
-            text: "Mental Pain",
-          },
-          {
-            text: "Spiritual Pain",
-          },
-        ],
-      },
-    },
-  },
-  {
-    id: "7",
-    question: "Anything else?",
-    type: "open_text",
-    group: "group_xyz_open",
-    matrix_id: "",
-    extra_data: {
-      openText: {
-        inputPlaceholder: "Please write the answer here",
-      },
-    },
-  },
-];
-
-const fetchSurveyData = () => {
-  let survey = questionsData
-    .map((data, index) => {
+export const fetchSurveyData = async (surveyId: number = 1, matrixId: number = 1) => {
+  const groupsFound = [];
+  let questionsData = await fetchQuestionsBySurveyId(surveyId);
+  let survey = await Promise.all(
+    questionsData.map(async (data) => {
       if (data.type === "matrix") {
-        const matrix = matrixData.find(
-          (element) => element["id"] === data.matrix_id
-        );
+        const matrixData = await fetchMatrixById(matrixId);
 
-        const index1 = survey.findIndex(
-          (element) => element["group"] === data.group
-        );
+        const isGroupFound = groupsFound.findIndex((element) => element === data.group);
 
-        if (index1 !== -1 || !matrix) {
+        if (isGroupFound !== -1 || !matrixData.length) {
           return null;
         }
-
-        const questionsArr = [];
-        for (let i = index; i < questionsData.length; i++) {
-          if (questionsData[i].group === data.group) {
-            questionsArr.push({
-              id: questionsData[i].id,
-              question: questionsData[i].question,
-            });
-          }
-        }
+        groupsFound.push(data.group);
+        const questionsArr = questionsData
+          .map((element) => {
+            if (element.group === data.group) {
+              return { id: element.id, question: element.question };
+            }
+            return null;
+          })
+          .filter((x) => x);
 
         return {
           type: data.type,
           group: data.group,
-          title: matrix.title,
-          columns: matrix.columns,
-          answers: matrix.answers,
-          instructions: matrix.instructions,
+          title: matrixData[0].title,
+          columns: matrixData[0].columns,
+          answers: matrixData[0].answers,
+          instructions: matrixData[0].instructions,
           questions: questionsArr,
         };
       }
@@ -165,8 +54,10 @@ const fetchSurveyData = () => {
 
       return null;
     })
-    .filter((x) => x);
+  );
+  survey = survey.filter((x) => x);
 
-  return { survey };
+  console.log(survey);
+  return survey;
 };
-fetchSurveyData();
+export default fetchSurveyData;
