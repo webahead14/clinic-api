@@ -29,7 +29,7 @@ CREATE TABLE protocols_surveys (
     survey_id INTEGER REFERENCES surveys(id),
     protocols_id INTEGER REFERENCES protocols(id),
     -- How many weeks after the treatment has started
-    week INTEGER,
+    week INTEGER
 );
 
 CREATE TABLE matrix(

@@ -19,6 +19,24 @@ export function attachSurveysToClient(protocolId, clientId) {
   return fetchSurveysByProtocolId(protocolId).then((surveys) => {});
 }
 
+export function getClient(data) {
+  const gov_id = [data.gov_id];
+  return db
+    .query("SELECT * FROM clients WHERE gov_id = $1", gov_id)
+    .then((client) => {
+      return client.rows;
+    });
+}
+
+export function createTreatment(govId, protocolId, startDate) {
+  const treatment = [govId, protocolId, startDate];
+  return db.query(
+    `INSERT INTO treatment (client_id,protocol_id,start_date) 
+    VALUES ($1,$2,$3)`,
+    treatment
+  );
+}
+
 //create client
 export function addClient(client) {
   const user = [
@@ -47,12 +65,4 @@ export function addClient(client) {
     });
 }
 
-export function createTreatment(govId, protocolId, startDate) {
-  const treatment = [govId, protocolId, startDate];
-  return db.query(
-    `INSERT INTO treatment (client_id,protocol_id,start_date) 
-    VALUES ($1,$2,$3)`,
-    treatment
-  );
-}
 //fetch client
