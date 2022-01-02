@@ -28,11 +28,8 @@ CREATE TABLE protocols_surveys (
     id SERIAL PRIMARY KEY,
     survey_id INTEGER REFERENCES surveys(id),
     protocols_id INTEGER REFERENCES protocols(id),
-    day varchar(20),
-    time varchar(20),
     -- How many weeks after the treatment has started
     week INTEGER,
-    "order" INTEGER,
     -- How many hours after the survey has started
     expiry varchar(20)
 );
