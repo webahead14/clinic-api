@@ -6,6 +6,15 @@ export function fetchClients() {
   });
 }
 
+export function getClient(data) {
+  const gov_id = [data.gov_id];
+  return db
+    .query("SELECT * FROM clients WHERE gov_id = $1", gov_id)
+    .then((client) => {
+      return client.rows;
+    });
+}
+
 export function attachSurveysToClient(protocolId, clientId) {}
 
 export async function createTreatment(data) {
