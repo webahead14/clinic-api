@@ -7,7 +7,7 @@
     "dev": "NODE_ENV=development ts-node-dev src/app.ts",
     "build": "tsc",
     "start": "pm2 ecosystem.config.js",
-    "build:db": "ts-node database/build.jt"
+    "build:db": "ts-node src/database/build.js"
   },
   "author": "",
   "license": "ISC",

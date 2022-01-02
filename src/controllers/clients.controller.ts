@@ -1,7 +1,7 @@
-import { fetchClients } from "../models/users.models"
-import ApiError from "../utils/ApiError"
+import { fetchClients } from "../models/users.models";
+import ApiError from "../utils/ApiError";
 import httpStatus from "http-status";
-import catchAsync from "../utils/catchAsync"
+import catchAsync from "../utils/catchAsync";
 
 const allClients = catchAsync(async (req, res) => {
   const clients = await fetchClients();

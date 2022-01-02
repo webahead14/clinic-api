@@ -28,13 +28,8 @@ CREATE TABLE protocols_surveys (
     id SERIAL PRIMARY KEY,
     survey_id INTEGER REFERENCES surveys(id),
     protocols_id INTEGER REFERENCES protocols(id),
-    day varchar(20),
-    time varchar(20),
     -- How many weeks after the treatment has started
     week INTEGER,
-    "order" INTEGER,
-    -- How many hours after the survey has started
-    expiry varchar(20)
 );
 
 CREATE TABLE matrix(
@@ -59,7 +54,7 @@ CREATE TABLE clients (
     passcode text,
     time_passcode text,
     time_passcode_expiry DATE,
-    gov_id INTEGER,
+    gov_id INTEGER UNIQUE,
     condition varchar(50),
     deleted boolean,
     phone varchar(13),
@@ -73,7 +68,7 @@ CREATE TABLE treatment(
     client_id INTEGER REFERENCES clients(id),
     protocol_id INTEGER REFERENCES protocols(id),
     start_date DATE,
-    status treatment_status
+    status treatment_status DEFAULT 'on-going'
 );
 
 CREATE TABLE answers (
@@ -122,8 +117,13 @@ INSERT INTO clinics VALUES (
     1,'admin','admin'
 );
 
-INSERT INTO surveys VALUES (
-    1,1,'GrayMatters Haifa'
+INSERT INTO surveys VALUES 
+    (1,1,'PCL-5'),
+    (2,1,'PSG-1');
+    (3,1,'ELB-3');
+    (4,1,'SGN-2');
+    (5,1,'LMB-1');
+    (6,1,'RMB-1'
 );
 
 INSERT INTO questions_surveys (id,question_id,survey_id) VALUES
@@ -137,7 +137,11 @@ INSERT INTO questions_surveys (id,question_id,survey_id) VALUES
 );
 
 INSERT INTO protocols(id,clinic_id,name,condition) VALUES
-(1,1,'PTSD','PTSD');
+    (1,1,'PTSD','PTSD'),
+    (2,1,'Depression','DP'),
+    (3,1,'Anxiety','ANX'),
+    (4,1,'ADHD','ADHD'
+);
 
 INSERT INTO clients (id,passcode,time_passcode,time_passcode_expiry,gov_id,condition,deleted,phone,email,name,gender)
 VALUES
