@@ -14,14 +14,16 @@ CREATE TABLE clinics (
 CREATE TABLE surveys (
     id SERIAL PRIMARY KEY,
     clinic_id INTEGER REFERENCES clinics(id),
-    name varchar(50)
+    name varchar(50),
+    created_at timestamp default CURRENT_TIMESTAMP not null
 );
 
 CREATE TABLE protocols (
     id SERIAL PRIMARY KEY,
     clinic_id INTEGER REFERENCES clinics(id),
     name varchar(50),
-    condition varchar(50)
+    condition varchar(50),
+    created_at timestamp default CURRENT_TIMESTAMP not null
 );
 
 CREATE TABLE protocols_surveys (
