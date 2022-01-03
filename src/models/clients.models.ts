@@ -7,9 +7,14 @@ export function fetchClients() {
 }
 
 export function getClient(data) {
+<<<<<<< Updated upstream
   console.log("data", data);
   return db
     .query("SELECT * FROM clients WHERE gov_id = $1", [data])
+=======
+  return db
+    .query("SELECT * FROM clients WHERE gov_id = $1", data)
+>>>>>>> Stashed changes
     .then((client) => {
       return client.rows[0];
     });

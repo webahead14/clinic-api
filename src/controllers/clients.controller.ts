@@ -43,6 +43,7 @@ const loginClient = catchAsync(async (req: any, res: any) => {
         name: client.name,
         gov_id: client.gov_id,
         access_token: token,
+        status: "success",
       };
       res.status(httpStatus.OK).send(response);
     }
