@@ -7,11 +7,10 @@ export function fetchClients() {
 }
 
 export function getClient(data) {
-  const gov_id = [data.gov_id];
   return db
-    .query("SELECT * FROM clients WHERE gov_id = $1", gov_id)
+    .query("SELECT * FROM clients WHERE gov_id = $1", [data])
     .then((client) => {
-      return client.rows;
+      return client.rows[0];
     });
 }
 
