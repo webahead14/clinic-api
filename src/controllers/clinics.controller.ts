@@ -1,28 +1,45 @@
 import { catchAsync, ApiError } from '../utils';
-import { fetchProtocols, fetchSurveys } from '../models/clinics.models';
+import {
+  fetchProtocols,
+  fetchSurveys,
+  fetchSurveysQuantityByProtocolId,
+  fetchQuestionQuantityBySurveyId,
+} from '../models/clinics.models';
 import httpStatus from 'http-status';
 
 const getAllProtocols = catchAsync(async (req, res) => {
-  const data = await fetchProtocols();
-  if (!data.length)
+  const protocolList = await fetchProtocols();
+  if (!protocolList.length)
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
       'Unable to fetch protocols'
     );
   else {
-    res.status(httpStatus.OK).send({ protocols: data });
+    for (let protocol of protocolList) {
+      protocol.surveysAmount = await fetchSurveysQuantityByProtocolId(
+        protocol.id
+      );
+      protocol.date = protocol.created_at.toLocaleDateString('he-il');
+      delete protocol.created_at;
+    }
+    res.status(httpStatus.OK).send({ protocols: protocolList });
   }
 });
 
 const getAllSurveys = catchAsync(async (req, res) => {
-  const data = await fetchSurveys();
-  if (!data.length)
+  const surveysList = await fetchSurveys();
+  if (!surveysList.length)
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
       'Unable to fetch surveys'
     );
   else {
-    res.status(httpStatus.OK).send({ surveys: data });
+    for (let survey of surveysList) {
+      survey.questionsAmount = await fetchQuestionQuantityBySurveyId(survey.id);
+      survey.date = survey.created_at.toLocaleDateString('he-il');
+      delete survey.created_at;
+    }
+    res.status(httpStatus.OK).send({ surveys: surveysList });
   }
 });
 

@@ -121,10 +121,10 @@ INSERT INTO clinics VALUES (
 
 INSERT INTO surveys VALUES 
     (1,1,'PCL-5'),
-    (2,1,'PSG-1');
-    (3,1,'ELB-3');
-    (4,1,'SGN-2');
-    (5,1,'LMB-1');
+    (2,1,'PSG-1'),
+    (3,1,'ELB-3'),
+    (4,1,'SGN-2'),
+    (5,1,'LMB-1'),
     (6,1,'RMB-1'
 );
 
@@ -139,10 +139,20 @@ INSERT INTO questions_surveys (id,question_id,survey_id) VALUES
 );
 
 INSERT INTO protocols(id,clinic_id,name,condition) VALUES
-    (1,1,'PTSD','PTSD'),
-    (2,1,'Depression','DP'),
-    (3,1,'Anxiety','ANX'),
-    (4,1,'ADHD','ADHD'
+    (1,1,'PCL-5','PTSD'),
+    (2,1,'GAD','Anxiety'),
+    (3,1,'PST-420-BLAZEIT','Stoner'),
+    (4,1,'THC','Hala'
+);
+
+INSERT INTO protocols_surveys(id,survey_id,protocols_id,week) VALUES
+    (1,1,1,1),
+    (2,1,2,2),
+    (3,1,3,3),
+    (4,1,1,3),
+    (5,1,4,4),
+    (6,1,4,5),
+    (7,1,4,6
 );
 
 INSERT INTO clients (id,passcode,time_passcode,time_passcode_expiry,gov_id,condition,deleted,phone,email,name,gender)
