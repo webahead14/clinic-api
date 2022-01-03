@@ -19,13 +19,12 @@ const allClients = catchAsync(async (req: any, res: any) => {
 //login client
 const loginClient = catchAsync(async (req: any, res: any) => {
   const { gov_id, passcode } = req.body;
-
   if (!gov_id || !passcode) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Missing data");
   }
 
   const client = await getClient(gov_id);
-  if (!client.length) {
+  if (!client) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No client found");
   }
 
@@ -33,7 +32,20 @@ const loginClient = catchAsync(async (req: any, res: any) => {
 
   bcrypt.compare(passcode, dbPassword).then((match) => {
     if (!match) {
-      throw new ApiError(httpStatus.BAD_REQUEST, "Wrong password");
+      return res.send({ status: "wrong password" });
+    } else {
+      const token = jwt.sign(
+        { name: client.name, id: client.id },
+        { expiresIn: "24h" },
+        SECRET
+      );
+      const response = {
+        name: client.name,
+        gov_id: client.gov_id,
+        access_token: token,
+        status: "success",
+      };
+      res.status(httpStatus.OK).send(response);
     }
 
     const token = jwt.sign(
