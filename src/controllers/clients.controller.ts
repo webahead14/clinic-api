@@ -25,7 +25,8 @@ const loginClient = catchAsync(async (req: any, res: any) => {
   }
 
   const client = await getClient(gov_id);
-  if (client.length) {
+  console.log(client);
+  if (!client) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No client found");
   }
   const dbPassword = client.passcode;

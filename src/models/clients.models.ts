@@ -11,7 +11,7 @@ export function getClient(data) {
   return db
     .query("SELECT * FROM clients WHERE gov_id = $1", gov_id)
     .then((client) => {
-      return client.rows;
+      return client.rows[0];
     });
 }
 
