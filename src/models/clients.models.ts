@@ -7,30 +7,14 @@ export function fetchClients() {
 }
 
 export function getClient(data) {
-<<<<<<< Updated upstream
-  console.log("data", data);
   return db
     .query("SELECT * FROM clients WHERE gov_id = $1", [data])
-=======
-  return db
-    .query("SELECT * FROM clients WHERE gov_id = $1", data)
->>>>>>> Stashed changes
     .then((client) => {
       return client.rows[0];
     });
 }
 
 export function attachSurveysToClient(protocolId, clientId) {}
-
-export async function createTreatment(data) {
-  // const govId = await addClient(data.client);
-  // const treatment = [govId, client.protocolId, client.startDate];
-  // return db.query(
-  //   `INSERT INTO treatment (client_id,protocol_id,start_date)
-  //   VALUES ($1,$2,$3)`,
-  //   treatment
-  // );
-}
 
 //create client
 export function addClient(client) {
