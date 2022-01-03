@@ -27,7 +27,9 @@ const loginClient = catchAsync(async (req: any, res: any) => {
   if (!client) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No client found");
   }
+
   const dbPassword = client.passcode;
+
   bcrypt.compare(passcode, dbPassword).then((match) => {
     if (!match) {
       return res.send({ status: "wrong password" });
@@ -45,8 +47,22 @@ const loginClient = catchAsync(async (req: any, res: any) => {
       };
       res.status(httpStatus.OK).send(response);
     }
+
+    const token = jwt.sign(
+      { name: client.name, id: client.id },
+      { expiresIn: "24h" },
+      SECRET
+    );
+
+    const response = {
+      name: client.name,
+      gov_id: client.gov_id,
+      access_token: token,
+    };
+    res.status(httpStatus.OK).send(response);
   });
 });
+
 export default {
   list: allClients,
   login: loginClient,

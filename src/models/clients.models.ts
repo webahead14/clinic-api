@@ -16,6 +16,15 @@ export function getClient(data) {
 
 export function attachSurveysToClient(protocolId, clientId) {}
 
+export async function createTreatment(govId, protocolId, startDate) {
+  const treatment = [govId, protocolId, startDate];
+  return db.query(
+    `INSERT INTO treatment (client_id,protocol_id,start_date) 
+    VALUES ($1,$2,$3)`,
+    treatment
+  );
+}
+
 //create client
 export function addClient(client) {
   const user = [
