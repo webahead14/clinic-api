@@ -109,7 +109,7 @@ INSERT INTO matrix (id,title,columns,answers,instructions) VALUES(
 INSERT INTO questions (id,question,type,"group",matrix_id,extra_data) VALUES
     (1,'Feeling very upset when something reminds you of the stressful experience?','matrix','group_xyz',1,'{}'),
     (2,'Trouble remembering important parts of the stressful experience?','matrix','group_xyz',1,'{}'),
-    (3,'Loss of interest in activities that you used to enjoy?','matrix','group_xyz',1,'{}'),
+    (3, 'Loss of interest in activities that you used to enjoy?','matrix','group_xyz',1,'{}'),
     (4,'Irritable behaviour, angry outbursts, or acting aggressively?','matrix','group_xyz',1,'{}'),
     (5,'Which choice of the choices below you think it will impact you stress the most?','multiple_choice','group_xyz_multi1',null,'{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "Smoke"},{"text": "Exercise"},{"text": "Drink alcohol"},{"text": "Eat"}]}}'),
     (6,'Mark the type of pains you''ve encountered lately:','multiple_choice','group_xyz_multi2',null,'{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "Physical Pain"},{"text": "Mental Pain"},{"text": "Spiritual Pain"}]}}'),
