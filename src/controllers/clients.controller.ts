@@ -19,13 +19,11 @@ const allClients = catchAsync(async (req: any, res: any) => {
 //login client
 const loginClient = catchAsync(async (req: any, res: any) => {
   const { gov_id, passcode } = req.body;
-  console.log(req.body, "req");
   if (!gov_id || !passcode) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Missing data");
   }
 
   const client = await getClient(gov_id);
-  console.log("client", client);
   if (!client) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No client found");
   }
@@ -36,7 +34,6 @@ const loginClient = catchAsync(async (req: any, res: any) => {
     if (!match) {
       return res.send({ status: "wrong password" });
     } else {
-      console.log("matcg", match);
       const token = jwt.sign({ name: client.name, id: client.id }, SECRET, {
         expiresIn: 24,
       });
