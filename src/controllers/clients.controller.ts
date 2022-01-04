@@ -1,4 +1,10 @@
-import { fetchClients, getClient } from "../models/clients.models";
+import {
+  fetchClients,
+  getClient,
+  addClient,
+  createTreatment,
+  attachSurveysToClient,
+} from "../models/clients.models";
 import ApiError from "../utils/ApiError";
 import httpStatus from "http-status";
 import catchAsync from "../utils/catchAsync";
@@ -14,7 +20,53 @@ const allClients = catchAsync(async (req: any, res: any) => {
 
   res.status(httpStatus.OK).send(clients);
 });
+//create client
+const createClient = catchAsync(async (req: any, res: any) => {
+  const {
+    passcode,
+    govId,
+    condition,
+    phone,
+    email,
+    name,
+    gender,
+    protocolId,
+    startDate,
+  } = req.body;
 
+  if (
+    !passcode ||
+    !govId ||
+    !condition ||
+    !phone ||
+    !email ||
+    !name ||
+    !gender ||
+    !protocolId ||
+    !startDate
+  ) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Missing data");
+  }
+
+  const checkExists = (await getClient(govId))[0];
+
+  if (checkExists)
+    throw new ApiError(httpStatus.BAD_REQUEST, "client already exists");
+
+  const client = {
+    passcode,
+    govId,
+    condition,
+    phone,
+    email,
+    name,
+    gender,
+  };
+  const clientId = await addClient(client);
+  const treatmentId = await createTreatment(clientId, protocolId, startDate);
+  await attachSurveysToClient(protocolId, clientId, treatmentId);
+  res.status(httpStatus.OK).send({ success: true });
+});
 //edit client
 //login client
 const loginClient = catchAsync(async (req: any, res: any) => {
@@ -66,4 +118,5 @@ const loginClient = catchAsync(async (req: any, res: any) => {
 export default {
   list: allClients,
   login: loginClient,
+  register: createClient,
 };
