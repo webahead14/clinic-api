@@ -86,11 +86,10 @@ const loginClient = catchAsync(async (req: any, res: any) => {
     if (!match) {
       return res.send({ status: "wrong password" });
     } else {
-      const token = jwt.sign(
-        { name: client.name, id: client.id },
-        { expiresIn: "24h" },
-        SECRET
-      );
+      const token = jwt.sign({ name: client.name, id: client.id }, SECRET, {
+        expiresIn: 60 * 60 * 24,
+      });
+
       const response = {
         name: client.name,
         gov_id: client.gov_id,
@@ -99,19 +98,6 @@ const loginClient = catchAsync(async (req: any, res: any) => {
       };
       res.status(httpStatus.OK).send(response);
     }
-
-    const token = jwt.sign(
-      { name: client.name, id: client.id },
-      { expiresIn: "24h" },
-      SECRET
-    );
-
-    const response = {
-      name: client.name,
-      gov_id: client.gov_id,
-      access_token: token,
-    };
-    res.status(httpStatus.OK).send(response);
   });
 });
 
