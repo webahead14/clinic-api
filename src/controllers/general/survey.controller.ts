@@ -5,6 +5,7 @@ import httpStatus from "http-status";
 const getSurveyById = catchAsync(async (req, res) => {
   let id = req.params.id;
   const data = (await fetchSurveyById(id))[0];
+  console.log(data);
   if (data.is_done)
     throw new ApiError(httpStatus.BAD_REQUEST, "Survey already done");
 

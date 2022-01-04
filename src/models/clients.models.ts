@@ -1,5 +1,6 @@
 import db from "../database/connection";
 import fetchSurveyData from "../services/survey.service";
+import moment from "moment";
 
 export function fetchClients() {
   return db.query("SELECT * FROM clients").then((clients) => {
@@ -16,14 +17,26 @@ export function fetchSurveysByProtocolId(protocolId) {
     .then((surveys) => surveys.rows);
 }
 
-export function attachSurveysToClient(protocolId, clientId, treatmentId) {
+export function attachSurveysToClient(
+  protocolId,
+  clientId,
+  treatmentId,
+  startDate
+) {
   return fetchSurveysByProtocolId(protocolId).then((surveys) => {
     surveys.forEach(async (survey) => {
       let formattedSurvey = await fetchSurveyData(survey.survey_id);
+      let surveyDate = moment(startDate).add({ weeks: +survey.week });
       return db.query(
-        `INSERT INTO clients_surveys (client_id,survey_id,treatment_id,survey_snapshot)
-                VALUES ($1,$2,$3,$4)`,
-        [clientId, survey.id, treatmentId, JSON.stringify(formattedSurvey)]
+        `INSERT INTO clients_surveys (client_id,survey_id,treatment_id,survey_snapshot,survey_date)
+                VALUES ($1,$2,$3,$4,$5)`,
+        [
+          clientId,
+          survey.id,
+          treatmentId,
+          JSON.stringify(formattedSurvey),
+          surveyDate,
+        ]
       );
     });
   });

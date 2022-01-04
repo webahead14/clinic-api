@@ -64,7 +64,7 @@ const createClient = catchAsync(async (req: any, res: any) => {
   };
   const clientId = await addClient(client);
   const treatmentId = await createTreatment(clientId, protocolId, startDate);
-  await attachSurveysToClient(protocolId, clientId, treatmentId);
+  await attachSurveysToClient(protocolId, clientId, treatmentId, startDate);
   res.status(httpStatus.OK).send({ success: true });
 });
 //edit client
