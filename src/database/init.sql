@@ -21,13 +21,14 @@ CREATE TABLE protocols (
     id SERIAL PRIMARY KEY,
     clinic_id INTEGER REFERENCES clinics(id),
     name varchar(50),
-    condition varchar(50)
+    condition varchar(50),
+    created_at DATE DEFAULT CURRENT_DATE
 );
 
 CREATE TABLE protocols_surveys (
     id SERIAL PRIMARY KEY,
     survey_id INTEGER REFERENCES surveys(id),
-    protocols_id INTEGER REFERENCES protocols(id),
+    protocol_id INTEGER REFERENCES protocols(id),
     -- How many weeks after the treatment has started
     week INTEGER
 );
@@ -83,9 +84,9 @@ CREATE TABLE clients_surveys(
     client_id INTEGER REFERENCES clients(id),
     survey_id INTEGER REFERENCES surveys(id),
     treatment_id INTEGER REFERENCES treatment(id),
-    is_done BOOLEAN,
-    is_partially_done BOOLEAN,
-    has_missed BOOLEAN,
+    is_done BOOLEAN DEFAULT 'false',
+    is_partially_done BOOLEAN DEFAULT 'false',
+    has_missed BOOLEAN DEFAULT 'false',
     survey_snapshot json
 );
 
@@ -140,20 +141,30 @@ INSERT INTO protocols(id,clinic_id,name,condition) VALUES
     (1,1,'PTSD','PTSD'),
     (2,1,'Depression','DP'),
     (3,1,'Anxiety','ANX'),
-    (4,1,'ADHD','ADHD'
+    (4,1,'ADHD','ADHD')
 );
 
-INSERT INTO clients (id,passcode,time_passcode,time_passcode_expiry,gov_id,condition,deleted,phone,email,name,gender)
+INSERT INTO clients (passcode,time_passcode,time_passcode_expiry,gov_id,condition,deleted,phone,email,name,gender)
 VALUES
-(1,'M4R70','M4R70', '2022-01-16','211622600','PTSD',false,'0525080784','durd2001@gmail.com','George Joubran', 'male'),
-(2,'$2a$10$xl6RQwCyucfYs85hF/JdBuoHctXf5trwl8E3S8.EL0fSQt7p7yYU.','M4R70', '2022-01-16','212771406','PTSD',false,'0525080784','durd2001@gmail.com','George Joubran', 'male');
+('$2a$10$xl6RQwCyucfYs85hF/JdBuoHctXf5trwl8E3S8.EL0fSQt7p7yYU.','M4R70', '2022-01-16','212771406','PTSD',false,'0525080784','durd2001@gmail.com','George Joubran', 'male');
 
 
-INSERT INTO treatment(id,client_id,protocol_id,start_date,status) VALUES
-(1,1,1,'2022-01-16','on-going');
+-- Inserting into treatment, not needed for now, could use for later.
+-- INSERT INTO treatment(id,client_id,protocol_id,start_date,status) VALUES
+-- (1,1,1,'2022-01-16','on-going');
 
-INSERT INTO clients_surveys(id,client_id,survey_id,treatment_id,is_done,is_partially_done,has_missed,survey_snapshot)
-VALUES
-(1,1,1,1,false,false,false,'[{"type":"matrix","title":"Do you feel bothered from:","columns":["Poorly","Semi-Poorly","Avarage","Semi-Strongly","Strongly"],"answers":["0","1","2","3","4"],"instructions":"Below is a list of problems and complaints that people sometimes have in response to stressful life experiences. How much you have been bothered by that problem IN THE LAST MONTH.","questions":[{"id":"1","question":"Feeling very upset when something reminds you of the stressful experience?"},{"id":"2","question":"Trouble remembering important parts of the stressful experience?"},{"id":"3","question":"Loss of interest in activities that you used to enjoy?"},{"id":"4","question":"Irritable behaviour, angry outbursts, or acting aggressively??"}]},{"id":"5","type":"multiple_choice","choice_type":"Radio","question":"Which choice of the choices below you think it will impact you stress the most?","answers":[{"text":"Smoke"},{"text":"Exercide"},{"text":"Drink"},{"text":"Eat"}]},{"id":"6","type":"multiple_choice","choice_type":"Checkbox","question":"Mark the type of injuries you''ve encountered lately:","answers":[{"text":"Physical Pain"},{"text":"Mental Pain"},{"text":"Spiritual Pain"}]},{"type":"open_text","id":"7","question":"Anything else?","placeholder":"Enter your answer here"}]');
+-- Inserting into cliesnt_survey, not needed for now, could use for later.
+-- INSERT INTO clients_surveys(id,client_id,survey_id,treatment_id,is_done,is_partially_done,has_missed,survey_snapshot)
+-- VALUES
+-- (1,1,1,1,false,false,false,'[{"type":"matrix","title":"Do you feel bothered from:","columns":["Poorly","Semi-Poorly","Avarage","Semi-Strongly","Strongly"],"answers":["0","1","2","3","4"],"instructions":"Below is a list of problems and complaints that people sometimes have in response to stressful life experiences. How much you have been bothered by that problem IN THE LAST MONTH.","questions":[{"id":"1","question":"Feeling very upset when something reminds you of the stressful experience?"},{"id":"2","question":"Trouble remembering important parts of the stressful experience?"},{"id":"3","question":"Loss of interest in activities that you used to enjoy?"},{"id":"4","question":"Irritable behaviour, angry outbursts, or acting aggressively??"}]},{"id":"5","type":"multiple_choice","choice_type":"Radio","question":"Which choice of the choices below you think it will impact you stress the most?","answers":[{"text":"Smoke"},{"text":"Exercide"},{"text":"Drink"},{"text":"Eat"}]},{"id":"6","type":"multiple_choice","choice_type":"Checkbox","question":"Mark the type of injuries you''ve encountered lately:","answers":[{"text":"Physical Pain"},{"text":"Mental Pain"},{"text":"Spiritual Pain"}]},{"type":"open_text","id":"7","question":"Anything else?","placeholder":"Enter your answer here"}]');
+
+INSERT INTO protocols_surveys (id,survey_id,protocol_id,week) VALUES
+(1,1,1,1),
+(2,3,1,1),
+(3,4,1,1),
+(4,1,2,1),
+(5,2,2,1),
+(6,3,2,1),
+(7,5,2,1);
 
 COMMIT;
