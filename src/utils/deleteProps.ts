@@ -1,6 +1,6 @@
 const deleteProps = (obj, props) => {
-  for (const p of props) {
-    p in obj && delete obj[p];
+  for (const property of props) {
+    property in obj && delete obj[property];
   }
 };
 

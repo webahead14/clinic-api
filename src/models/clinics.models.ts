@@ -1,4 +1,4 @@
-import db from '../database/connection';
+import db from "../database/connection";
 
 //protocols table join with protocols_surveys table, counting surveys types and surveys amount per protocol.
 export function fetchProtocols() {
