@@ -11,7 +11,6 @@ import catchAsync from "../utils/catchAsync";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { create } from "domain";
 
 dotenv.config();
 const SECRET = process.env.JWT_SECRET;

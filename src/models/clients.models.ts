@@ -18,7 +18,6 @@ export function fetchSurveysByProtocolId(protocolId) {
 
 export function attachSurveysToClient(protocolId, clientId, treatmentId) {
   return fetchSurveysByProtocolId(protocolId).then((surveys) => {
-    console.log(surveys);
     surveys.forEach(async (survey) => {
       let formattedSurvey = await fetchSurveyData(survey.survey_id);
       return db.query(
@@ -38,7 +37,7 @@ export function createTreatment(clientId, protocolId, startDate) {
     VALUES ($1,$2,$3) RETURNING id`,
       treatment
     )
-    .then((treatment) => treatment.rows[0].id);
+    .then(({ rows }) => rows[0].id);
 }
 
 //create client
@@ -61,8 +60,8 @@ export function addClient(client) {
       RETURNING id`,
       user
     )
-    .then((govId) => {
-      return govId.rows[0].id;
+    .then(({ rows }) => {
+      return rows[0].id;
     });
 }
 
