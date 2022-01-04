@@ -141,12 +141,14 @@ INSERT INTO protocols(id,clinic_id,name,condition) VALUES
     (1,1,'PTSD','PTSD'),
     (2,1,'Depression','DP'),
     (3,1,'Anxiety','ANX'),
-    (4,1,'ADHD','ADHD'
+    (4,1,'ADHD','ADHD')
 );
 
 INSERT INTO clients (passcode,time_passcode,time_passcode_expiry,gov_id,condition,deleted,phone,email,name,gender)
 VALUES
-('M4R70','M4R70', '2022-01-16','211622600','PTSD',false,'0525080784','durd2001@gmail.com','George Joubran', 'male');
+('$2a$10$xl6RQwCyucfYs85hF/JdBuoHctXf5trwl8E3S8.EL0fSQt7p7yYU.','M4R70', '2022-01-16','212771406','PTSD',false,'0525080784','durd2001@gmail.com','George Joubran', 'male');
+
+
 -- Inserting into treatment, not needed for now, could use for later.
 -- INSERT INTO treatment(id,client_id,protocol_id,start_date,status) VALUES
 -- (1,1,1,'2022-01-16','on-going');
