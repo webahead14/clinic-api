@@ -74,3 +74,30 @@ export function getClient(data) {
       return client.rows;
     });
 }
+
+export function fetchSurveys(client_id, treatment_id) {
+  return db
+    .query(
+      "SELECT * FROM clients_surveys WHERE client_id = $1 AND treatment_id = $2",
+      [client_id, treatment_id]
+    )
+    .then((surveys) => {
+      return surveys.rows;
+    });
+}
+
+export function getTreatment(id) {
+  console.log("id", id);
+  return db
+    .query("SELECT * FROM treatment WHERE client_id = $1", [id])
+    .then((treatment) => {
+      return treatment.rows[0];
+    });
+}
+export function getProtocol(condition) {
+  return db
+    .query("SELECT * FROM protocols WHERE condition = $1", [condition])
+    .then((protocol) => {
+      return protocol.rows[0];
+    });
+}

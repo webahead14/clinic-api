@@ -141,7 +141,7 @@ INSERT INTO protocols(id,clinic_id,name,condition) VALUES
     (1,1,'PTSD','PTSD'),
     (2,1,'Depression','DP'),
     (3,1,'Anxiety','ANX'),
-    (4,1,'ADHD','ADHD')
+    (4,1,'ADHD','ADHD'
 );
 
 INSERT INTO clients (passcode,time_passcode,time_passcode_expiry,gov_id,condition,deleted,phone,email,name,gender)
@@ -150,8 +150,8 @@ VALUES
 
 
 -- Inserting into treatment, not needed for now, could use for later.
--- INSERT INTO treatment(id,client_id,protocol_id,start_date,status) VALUES
--- (1,1,1,'2022-01-16','on-going');
+INSERT INTO treatment (id,client_id,protocol_id,start_date,status) VALUES
+(1,1,1,'2022-01-16','on-going');
 
 -- Inserting into cliesnt_survey, not needed for now, could use for later.
 -- INSERT INTO clients_surveys(id,client_id,survey_id,treatment_id,is_done,is_partially_done,has_missed,survey_snapshot)
