@@ -12,5 +12,7 @@ router.get("/clients", clientController.list);
 router.post("/client/login", clientController.login);
 router.post("/client/register", clientController.register);
 router.get("/client/:id", clinicController.data);
+router.get("/clinic/protocols", clinicController.getProtocols);
+router.get("/clinic/surveys", clinicController.getSurveys);
 
 export default router;
