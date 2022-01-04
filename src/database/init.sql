@@ -14,7 +14,8 @@ CREATE TABLE clinics (
 CREATE TABLE surveys (
     id SERIAL PRIMARY KEY,
     clinic_id INTEGER REFERENCES clinics(id),
-    name varchar(50)
+    name varchar(50),
+    created_at timestamp default CURRENT_TIMESTAMP not null
 );
 
 CREATE TABLE protocols (
@@ -22,7 +23,7 @@ CREATE TABLE protocols (
     clinic_id INTEGER REFERENCES clinics(id),
     name varchar(50),
     condition varchar(50),
-    created_at DATE DEFAULT CURRENT_DATE
+    created_at timestamp default CURRENT_TIMESTAMP not null
 );
 
 CREATE TABLE protocols_surveys (
@@ -107,7 +108,7 @@ INSERT INTO matrix (id,title,columns,answers,instructions) VALUES(
 INSERT INTO questions (id,question,type,"group",matrix_id,extra_data) VALUES
     (1,'Feeling very upset when something reminds you of the stressful experience?','matrix','group_xyz',1,'{}'),
     (2,'Trouble remembering important parts of the stressful experience?','matrix','group_xyz',1,'{}'),
-    (3, 'Loss of interest in activities that you used to enjoy?','matrix','group_xyz',1,'{}'),
+    (3,'Loss of interest in activities that you used to enjoy?','matrix','group_xyz',1,'{}'),
     (4,'Irritable behaviour, angry outbursts, or acting aggressively?','matrix','group_xyz',1,'{}'),
     (5,'Which choice of the choices below you think it will impact you stress the most?','multiple_choice','group_xyz_multi1',null,'{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "Smoke"},{"text": "Exercise"},{"text": "Drink alcohol"},{"text": "Eat"}]}}'),
     (6,'Mark the type of pains you''ve encountered lately:','multiple_choice','group_xyz_multi2',null,'{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "Physical Pain"},{"text": "Mental Pain"},{"text": "Spiritual Pain"}]}}'),
@@ -138,10 +139,21 @@ INSERT INTO questions_surveys (id,question_id,survey_id) VALUES
 );
 
 INSERT INTO protocols(id,clinic_id,name,condition) VALUES
-    (1,1,'PTSD','PTSD'),
-    (2,1,'Depression','DP'),
-    (3,1,'Anxiety','ANX'),
-    (4,1,'ADHD','ADHD')
+    (1,1,'PCL-5','PTSD'),
+    (2,1,'GAD','Anxiety'),
+    (3,1,'PST-420-BLAZEIT','Stoner'),
+    (4,1,'THC','Hala'
+);
+
+INSERT INTO protocols_surveys(id,survey_id,protocol_id,week) VALUES
+    (1,1,1,1),
+    (2,1,2,2),
+    (3,1,3,3),
+    (4,1,1,3),
+    (5,1,4,4),
+    (6,2,4,4),
+    (7,1,4,5),
+    (8,1,4,6
 );
 
 INSERT INTO clients (passcode,time_passcode,time_passcode_expiry,gov_id,condition,deleted,phone,email,name,gender)
@@ -157,14 +169,5 @@ VALUES
 -- INSERT INTO clients_surveys(id,client_id,survey_id,treatment_id,is_done,is_partially_done,has_missed,survey_snapshot)
 -- VALUES
 -- (1,1,1,1,false,false,false,'[{"type":"matrix","title":"Do you feel bothered from:","columns":["Poorly","Semi-Poorly","Avarage","Semi-Strongly","Strongly"],"answers":["0","1","2","3","4"],"instructions":"Below is a list of problems and complaints that people sometimes have in response to stressful life experiences. How much you have been bothered by that problem IN THE LAST MONTH.","questions":[{"id":"1","question":"Feeling very upset when something reminds you of the stressful experience?"},{"id":"2","question":"Trouble remembering important parts of the stressful experience?"},{"id":"3","question":"Loss of interest in activities that you used to enjoy?"},{"id":"4","question":"Irritable behaviour, angry outbursts, or acting aggressively??"}]},{"id":"5","type":"multiple_choice","choice_type":"Radio","question":"Which choice of the choices below you think it will impact you stress the most?","answers":[{"text":"Smoke"},{"text":"Exercide"},{"text":"Drink"},{"text":"Eat"}]},{"id":"6","type":"multiple_choice","choice_type":"Checkbox","question":"Mark the type of injuries you''ve encountered lately:","answers":[{"text":"Physical Pain"},{"text":"Mental Pain"},{"text":"Spiritual Pain"}]},{"type":"open_text","id":"7","question":"Anything else?","placeholder":"Enter your answer here"}]');
-
-INSERT INTO protocols_surveys (id,survey_id,protocol_id,week) VALUES
-(1,1,1,1),
-(2,3,1,1),
-(3,4,1,1),
-(4,1,2,1),
-(5,2,2,1),
-(6,3,2,1),
-(7,5,2,1);
 
 COMMIT;
