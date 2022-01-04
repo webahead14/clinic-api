@@ -1,31 +1,24 @@
 import db from '../database/connection';
 
+//protocols table join with protocols_surveys table, counting surveys types and surveys amount per protocol.
 export function fetchProtocols() {
-  return db.query('SELECT * FROM protocols').then((protocols) => {
-    return protocols.rows;
-  });
+  return db
+    .query(
+      `SELECT * FROM protocols LEFT JOIN (SELECT protocols_id, COUNT(DISTINCT survey_id)
+       as surveys_types, COUNT(survey_id)
+       as surveys_amount FROM protocols_surveys GROUP BY protocols_id)
+       as countingTbl ON protocols.id = countingTbl.protocols_id`
+    )
+    .then((protocols) => protocols.rows);
 }
 
+//surveys tbl join with questions_surveys tbl, counting questions per survey.
 export function fetchSurveys() {
-  return db.query('SELECT * FROM surveys').then((surveys) => {
-    return surveys.rows;
-  });
-}
-
-//get the array's length of the suerverys attached to specific protocol_id
-export function fetchSurveysQuantityByProtocolId(id) {
   return db
-    .query(`SELECT * FROM protocols_surveys WHERE protocols_id=${id}`)
-    .then((surveys) => {
-      return surveys.rows.length;
-    });
-}
-
-//get the array's length of the questions attached to specific survey.
-export function fetchQuestionQuantityBySurveyId(id) {
-  return db
-    .query(`SELECT * FROM questions_surveys WHERE survey_id=${id}`)
-    .then((surveys) => {
-      return surveys.rows.length;
-    });
+    .query(
+      `SELECT * FROM surveys LEFT JOIN (SELECT survey_id, COUNT(question_id) 
+       as questions_amount FROM questions_surveys GROUP BY survey_id) 
+       as countingTbl ON surveys.id = countingTbl.survey_id`
+    )
+    .then((surveys) => surveys.rows);
 }
