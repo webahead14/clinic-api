@@ -87,7 +87,7 @@ const loginClient = catchAsync(async (req: any, res: any) => {
       return res.send({ status: "wrong password" });
     } else {
       const token = jwt.sign({ name: client.name, id: client.id }, SECRET, {
-        expiresIn: 24,
+        expiresIn: 60 * 60 * 24,
       });
 
       const response = {
