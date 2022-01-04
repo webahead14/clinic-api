@@ -1,14 +1,16 @@
 import { fetchMatrixById, fetchQuestionsBySurveyId } from "../models/survey";
 
-export const fetchSurveyData = async (surveyId: number = 1, matrixId: number = 1) => {
+export const fetchSurveyData = async (surveyId: number = 1) => {
   const groupsFound = [];
   let questionsData = await fetchQuestionsBySurveyId(surveyId);
   let survey = await Promise.all(
     questionsData.map(async (data) => {
       if (data.type === "matrix") {
-        const matrixData = await fetchMatrixById(matrixId);
+        const matrixData = await fetchMatrixById(data.matrix_id);
 
-        const isGroupFound = groupsFound.findIndex((element) => element === data.group);
+        const isGroupFound = groupsFound.findIndex(
+          (element) => element === data.group
+        );
 
         if (isGroupFound !== -1 || !matrixData.length) {
           return null;
@@ -56,8 +58,6 @@ export const fetchSurveyData = async (surveyId: number = 1, matrixId: number = 1
     })
   );
   survey = survey.filter((x) => x);
-
-  console.log(survey);
   return survey;
 };
 export default fetchSurveyData;

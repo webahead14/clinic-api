@@ -4,10 +4,10 @@ import db from "../database/connection";
 export function fetchProtocols() {
   return db
     .query(
-      `SELECT * FROM protocols LEFT JOIN (SELECT protocols_id, COUNT(DISTINCT survey_id)
+      `SELECT * FROM protocols LEFT JOIN (SELECT protocol_id, COUNT(DISTINCT survey_id)
        as surveys_types, COUNT(survey_id)
-       as surveys_amount FROM protocols_surveys GROUP BY protocols_id)
-       as countingTbl ON protocols.id = countingTbl.protocols_id`
+       as surveys_amount FROM protocols_surveys GROUP BY protocol_id)
+       as countingTbl ON protocols.id = countingTbl.protocol_id`
     )
     .then((protocols) => protocols.rows);
 }

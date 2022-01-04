@@ -19,7 +19,7 @@ const getAllProtocols = catchAsync(async (req, res) => {
       "created_at",
       "surveys_amount",
       "surveys_types",
-      "protocols_id",
+      "protocol_id",
       "clinic_id",
     ]);
   }
