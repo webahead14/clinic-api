@@ -14,7 +14,7 @@ const getAllProtocols = catchAsync(async (req, res) => {
     protocol.surveysAmount = protocol.surveys_amount;
     protocol.surveysTypes = protocol.surveys_types;
     protocol.date = protocol.created_at.toLocaleDateString("he-il");
-    protocol.key = protocol.id;
+    protocol.id = protocol.id;
 
     deleteProps(protocol, [
       "created_at",
@@ -40,7 +40,7 @@ const getAllSurveys = catchAsync(async (req, res) => {
     survey.questionsAmount = survey.questions_amount;
     survey.date = survey.created_at.toLocaleDateString("he-il");
     delete survey.created_at;
-    survey.key = survey.id;
+    survey.id = survey.id;
 
     deleteProps(survey, [
       "created_at",
