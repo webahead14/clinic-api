@@ -1,9 +1,12 @@
 import {
   getClient,
-  fetchSurveys,
   getTreatment,
   getProtocol,
+  fetchSurveysByClientAndTreatment,
 } from "../../models/clients.models";
+import { fetchProtocols, fetchSurveys } from "../../models/clinics.model";
+import deleteProps from "../../utils/deleteProps";
+
 import ApiError from "../../utils/ApiError";
 import httpStatus from "http-status";
 import catchAsync from "../../utils/catchAsync";
@@ -25,7 +28,10 @@ const getData = catchAsync(async (req: any, res: any) => {
     return res.status(httpStatus.OK).send(response);
   }
   const protocol = await getProtocol(treatment.protocol_id);
-  const surveys = await fetchSurveys(client.id, treatment.id);
+  const surveys = await fetchSurveysByClientAndTreatment(
+    client.id,
+    treatment.id
+  );
   const response = {
     client: client,
     surveys: surveys,

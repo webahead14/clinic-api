@@ -75,7 +75,7 @@ export function getClient(data) {
     });
 }
 
-export function fetchSurveys(client_id, treatment_id) {
+export function fetchSurveysByClientAndTreatment(client_id, treatment_id) {
   return db
     .query(
       "SELECT * FROM clients_surveys WHERE client_id = $1 AND treatment_id = $2",
