@@ -1,15 +1,13 @@
+import { catchAsync, ApiError, deleteProps } from "../utils"
+import { fetchProtocols, fetchSurveys } from "../models/clinics.model"
+import httpStatus from "http-status"
+
 import {
   getClient,
   getTreatment,
   getProtocol,
   fetchSurveysByClientAndTreatment,
 } from "../models/clients.models"
-import { fetchProtocols, fetchSurveys } from "../models/clinics.model"
-import deleteProps from "../utils/deleteProps"
-
-import ApiError from "../utils/ApiError"
-import httpStatus from "http-status"
-import catchAsync from "../utils/catchAsync"
 
 // Get a specific client's data
 const getClientData = catchAsync(async (req: any, res: any) => {
@@ -79,6 +77,7 @@ const getAllProtocols = catchAsync(async (req, res) => {
     protocol.surveysAmount = protocol.surveys_amount
     protocol.surveysTypes = protocol.surveys_types
     protocol.date = protocol.created_at.toLocaleDateString("he-il")
+    protocol.id = protocol.id
 
     deleteProps(protocol, [
       "created_at",
@@ -105,8 +104,8 @@ const getAllSurveys = catchAsync(async (req, res) => {
   for (let survey of surveysList) {
     survey.questionsAmount = survey.questions_amount
     survey.date = survey.created_at.toLocaleDateString("he-il")
-
     delete survey.created_at
+    survey.id = survey.id
 
     deleteProps(survey, [
       "created_at",
