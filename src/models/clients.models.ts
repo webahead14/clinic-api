@@ -1,10 +1,10 @@
-import db from "../database/connection";
-import fetchSurveyData from "../services/survey.service";
+import db from "../database/connection"
+import fetchSurveyData from "../services/survey.service"
 
 export function fetchClients() {
   return db.query("SELECT * FROM clients").then((clients) => {
-    return clients.rows;
-  });
+    return clients.rows
+  })
 }
 
 export function fetchSurveysByProtocolId(protocolId) {
@@ -13,34 +13,34 @@ export function fetchSurveysByProtocolId(protocolId) {
       "SELECT * FROM protocols_surveys ps INNER JOIN surveys ON surveys.id = ps.survey_id WHERE ps.protocol_id = $1",
       [protocolId]
     )
-    .then((surveys) => surveys.rows);
+    .then((surveys) => surveys.rows)
 }
 
 export function attachSurveysToClient(protocolId, clientId, treatmentId) {
   return fetchSurveysByProtocolId(protocolId).then((surveys) => {
     surveys.forEach(async (survey) => {
-      let formattedSurvey = await fetchSurveyData(survey.survey_id);
+      let formattedSurvey = await fetchSurveyData(survey.survey_id)
       return db.query(
         `INSERT INTO clients_surveys (client_id,survey_id,treatment_id,survey_snapshot)
                 VALUES ($1,$2,$3,$4)`,
         [clientId, survey.id, treatmentId, JSON.stringify(formattedSurvey)]
-      );
-    });
-  });
+      )
+    })
+  })
 }
 
 export function createTreatment(clientId, protocolId, startDate) {
-  const treatment = [clientId, protocolId, startDate];
+  const treatment = [clientId, protocolId, startDate]
   return db
     .query(
       `INSERT INTO treatment (client_id,protocol_id,start_date) 
     VALUES ($1,$2,$3) RETURNING id`,
       treatment
     )
-    .then(({ rows }) => rows[0].id);
+    .then(({ rows }) => rows[0].id)
 }
 
-//create client
+// create client
 export function addClient(client) {
   const user = [
     client.passcode,
@@ -50,7 +50,7 @@ export function addClient(client) {
     client.email,
     client.name,
     client.gender,
-  ];
+  ]
 
   return db
     .query(
@@ -61,16 +61,54 @@ export function addClient(client) {
       user
     )
     .then(({ rows }) => {
-      return rows[0].id;
-    });
+      return rows[0].id
+    })
 }
 
-//fetch client
-
+// fetch client
 export function getClient(data) {
   return db
-    .query("SELECT * FROM clients WHERE gov_id = $1", [data])
+    .query(
+      "SELECT id, gov_id, name, gender, email, phone, condition FROM clients WHERE id = $1",
+      [data]
+    )
     .then((client) => {
-      return client.rows;
-    });
+      return client.rows
+    })
+}
+
+export function fetchSurveysByClientAndTreatment(clientId, treatmentId) {
+  // To add to this query
+  // once the survey_date is added to the clients_surveys table then we will need to add it to this query
+  // so when can show the date of each survey for the client -> clients_surveys.survey_date
+  return db
+    .query(
+      `SELECT clients_surveys.is_done, clients_surveys.is_partially_done, clients_surveys.has_missed, surveys.name
+      FROM clients_surveys 
+      LEFT JOIN surveys ON surveys.id = clients_surveys.survey_id
+      WHERE clients_surveys.client_id = $1 AND clients_surveys.treatment_id = $2`,
+      [clientId, treatmentId]
+    )
+    .then((surveys) => {
+      return surveys.rows
+    })
+}
+
+export function getTreatment(id) {
+  return db
+    .query(
+      "SELECT id, protocol_id, start_date, status FROM treatment WHERE client_id = $1",
+      [id]
+    )
+    .then((treatment) => {
+      return treatment.rows[0]
+    })
+}
+
+export function getProtocol(id) {
+  return db
+    .query("SELECT name FROM protocols WHERE id = $1", [id])
+    .then((protocol) => {
+      return protocol.rows[0]
+    })
 }
