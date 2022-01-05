@@ -11,7 +11,7 @@ router.get("/client/survey/:id", generalController.survey.getSurveyById);
 router.get("/clients", clientController.list);
 router.post("/client/login", clientController.login);
 router.post("/client/register", clientController.register);
-router.get("/client/:id", clinicController.data);
+router.get("/clinic/client/:id", clinicController.getData);
 router.get("/clinic/protocols", clinicController.getProtocols);
 router.get("/clinic/surveys", clinicController.getSurveys);
 

@@ -94,9 +94,9 @@ export function getTreatment(id) {
       return treatment.rows[0];
     });
 }
-export function getProtocol(condition) {
+export function getProtocol(id) {
   return db
-    .query("SELECT * FROM protocols WHERE condition = $1", [condition])
+    .query("SELECT * FROM protocols WHERE id = $1", [id])
     .then((protocol) => {
       return protocol.rows[0];
     });
