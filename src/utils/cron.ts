@@ -1,20 +1,26 @@
 var CronJob = require("cron").CronJob;
 import db from "../database/connection";
+import moment from "moment";
 
 let job = new CronJob(
   "0 0 0 ? * * *",
-  function () {
-    console.log("You will see this message every second");
-    const clients = db
+  async function () {
+    const clients = await db
       .query(`SELECT client_id FROM treatment WHERE status='on-going'`)
-      .then(({ rows }) => {
-        return rows;
-      });
-    clients.forEach((client) => {
-      db.query(
-        `SELECT * from clients_surveys WHERE client_id = $1 AND is_done = False AND has_missed = False`,
-        [client]
-      ).then(({ rows }) => {});
+      .then(({ rows }) => rows);
+    clients.forEach(async (client) => {
+      const clientData = await db
+        .query(
+          `SELECT * from clients_surveys WHERE client_id = $1 AND is_done = 'false' AND has_missed = 'false'`,
+          [client]
+        )
+        .then(({ rows }) => rows);
+      if (moment().toDate() === clientData.survey_date) {
+        db.query(
+          `UPDATE clients_surveys SET has_missed = 'true' WHERE client_id = $1`,
+          [client]
+        );
+      }
     });
   },
   null,
