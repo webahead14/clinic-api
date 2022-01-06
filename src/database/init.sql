@@ -69,7 +69,8 @@ CREATE TABLE treatment(
     client_id INTEGER REFERENCES clients(id),
     protocol_id INTEGER REFERENCES protocols(id),
     start_date DATE,
-    status treatment_status DEFAULT 'on-going'
+    status treatment_status DEFAULT 'on-going',
+    reminders json
 );
 
 CREATE TABLE answers (

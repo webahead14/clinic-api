@@ -2,29 +2,46 @@ var CronJob = require("cron").CronJob;
 import db from "../database/connection";
 import moment from "moment";
 
-let job = new CronJob(
-  "0 0 0 ? * * *",
+let updateMissedJob = new CronJob(
+  "0 59 23 ? * * *",
   async function () {
     const clients = await db
       .query(`SELECT client_id FROM treatment WHERE status='on-going'`)
       .then(({ rows }) => rows);
     clients.forEach(async (client) => {
-      const clientData = await db
+      const clientSurveys = await db
         .query(
           `SELECT * from clients_surveys WHERE client_id = $1 AND is_done = 'false' AND has_missed = 'false'`,
-          [client]
+          [client.client_id]
         )
         .then(({ rows }) => rows);
-      if (moment().toDate() === clientData.survey_date) {
-        db.query(
-          `UPDATE clients_surveys SET has_missed = 'true' WHERE client_id = $1`,
-          [client]
-        );
-      }
+      clientSurveys.forEach((survey) => {
+        const currDate = moment(moment().toDate()).format("L");
+        const surveyDate = moment(survey.survey_date).format("L");
+        if (currDate === surveyDate) {
+          db.query(
+            `UPDATE clients_surveys SET has_missed = 'true' WHERE client_id = $1`,
+            [client.client_id]
+          );
+        }
+      });
     });
   },
   null,
   true,
   "Israel"
 );
-export default job;
+
+let remindersJob = new CronJob(
+  "0 */5 * ? * *",
+  async function () {
+    const clients = await db
+      .query(`SELECT client_id FROM treatment WHERE status='on-going'`)
+      .then(({ rows }) => rows);
+  },
+  null,
+  true,
+  "Israel"
+);
+
+export default { updateMissedJob, remindersJob };

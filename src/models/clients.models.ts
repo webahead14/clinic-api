@@ -42,12 +42,17 @@ export function attachSurveysToClient(
   });
 }
 
-export function createTreatment(clientId, protocolId, startDate) {
-  const treatment = [clientId, protocolId, startDate];
+export function createTreatment(clientId, protocolId, startDate, reminders) {
+  const treatment = [
+    clientId,
+    protocolId,
+    startDate,
+    JSON.stringify(reminders),
+  ];
   return db
     .query(
-      `INSERT INTO treatment (client_id,protocol_id,start_date) 
-    VALUES ($1,$2,$3) RETURNING id`,
+      `INSERT INTO treatment (client_id,protocol_id,start_date,reminders) 
+    VALUES ($1,$2,$3,$4) RETURNING id`,
       treatment
     )
     .then(({ rows }) => rows[0].id);
