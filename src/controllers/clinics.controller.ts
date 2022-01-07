@@ -118,7 +118,11 @@ const getAllSurveys = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ surveys: surveysList });
 });
 
-const sendTempPassByMail = catchAsync(async (req, res) => {
+//Get temporary password by mail/sms
+const sendTempPass = catchAsync(async (req, res) => {
+  const { govId, email, phone, method } = req.body;
+
+  console.log(govId, email, phone, method);
   //sensitive data from .env file.
   const {
     MAIL_USERNAME,
@@ -144,30 +148,30 @@ const sendTempPassByMail = catchAsync(async (req, res) => {
   });
 
   //what data to send and to whom.
-  let mailOptions = {
-    from: `${MAIL_USERNAME}@gmail.com`,
-    to: "mohammadfaour93@gmail.com",
-    subject: "GrayMatter Project",
-    // text: "Hi from your graymatter project",
-    html: `<h1>Mail Test</h1><p style="font-size: 26px;">Hi <span style="text-decoration: underline;">Mario</span>, <span style="color:red;font-size: 22px;">how can a localhost send a mesage to you?</span></p><p style="color:green; font-weight: bold; font-size: 22px;">interesting!</p>`,
-  };
+  // let mailOptions = {
+  //   from: `${MAIL_USERNAME}@gmail.com`,
+  //   to: "mohammadfaour93@gmail.com",
+  //   subject: "GrayMatter Project",
+  //   // text: "Hi from your graymatter project",
+  //   html: `<h1>Mail Test</h1><p style="font-size: 26px;">Hi <span style="text-decoration: underline;">Mario</span>, <span style="color:red;font-size: 22px;">how can a localhost send a mesage to you?</span></p><p style="color:green; font-weight: bold; font-size: 22px;">interesting!</p>`,
+  // };
 
   //Send a new email.
-  transporter.sendMail(mailOptions, (err, data) => {
-    if (err) {
-      console.error("Error " + err);
-      res
-        .status(httpStatus.OK)
-        .send({ response: `An error occured: ${err.message}` });
-    } else {
-      res.status(httpStatus.OK).send({ response: "Email sent successfully" });
-    }
-  });
+  // transporter.sendMail(mailOptions, (err, data) => {
+  //   if (err) {
+  //     console.error("Error " + err);
+  //     res
+  //       .status(httpStatus.OK)
+  //       .send({ response: `An error occured: ${err.message}` });
+  //   } else {
+  //     res.status(httpStatus.OK).send({ response: "Email sent successfully" });
+  //   }
+  // });
 });
 
 export default {
   getProtocols: getAllProtocols,
   getSurveys: getAllSurveys,
   getClientData: getClientData,
-  sendPassword: sendTempPassByMail,
+  sendPassword: sendTempPass,
 };
