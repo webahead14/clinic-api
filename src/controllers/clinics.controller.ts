@@ -3,6 +3,8 @@ import { fetchProtocols, fetchSurveys } from "../models/clinics.model";
 import httpStatus from "http-status";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import passcodeGenerator from "generate-password";
+import bcrypt from "bcryptjs";
 
 dotenv.config();
 
@@ -11,6 +13,8 @@ import {
   getTreatment,
   getProtocol,
   fetchSurveysByClientAndTreatment,
+  getClientByGovId,
+  setTempPasscode,
 } from "../models/clients.models";
 
 // Get a specific client's data
@@ -122,51 +126,92 @@ const getAllSurveys = catchAsync(async (req, res) => {
 const sendTempPass = catchAsync(async (req, res) => {
   const { govId, email, phone, method } = req.body;
 
-  console.log(govId, email, phone, method);
-  //sensitive data from .env file.
-  const {
-    MAIL_USERNAME,
-    MAIL_PASSWORD,
-    OAUTH_CLIENTID,
-    OAUTH_CLIENT_SECRET,
-    OAUTH_REFRESH_TOKEN,
-  } = process.env;
+  const account = await getClientByGovId(govId);
+  account.expiresIn = account.time_passcode_expiry;
+  delete account.time_passcode_expiry;
+  const twoMinutes = 120000; //in miliseconds
 
-  //transport configuration object,
-  let transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-      type: "OAuth2",
-      user: MAIL_USERNAME,
-      pass: MAIL_PASSWORD,
-      clientId: OAUTH_CLIENTID,
-      clientSecret: OAUTH_CLIENT_SECRET,
-      refreshToken: OAUTH_REFRESH_TOKEN,
-    },
-  });
+  console.log(
+    new Date() > new Date(account.expiresIn.getTime() + twoMinutes),
+    "now: ",
+    new Date(),
+    "expiresIn + 2 mins:",
+    new Date(account.expiresIn.getTime() + twoMinutes)
+  );
 
-  //what data to send and to whom.
-  // let mailOptions = {
-  //   from: `${MAIL_USERNAME}@gmail.com`,
-  //   to: "mohammadfaour93@gmail.com",
-  //   subject: "GrayMatter Project",
-  //   // text: "Hi from your graymatter project",
-  //   html: `<h1>Mail Test</h1><p style="font-size: 26px;">Hi <span style="text-decoration: underline;">Mario</span>, <span style="color:red;font-size: 22px;">how can a localhost send a mesage to you?</span></p><p style="color:green; font-weight: bold; font-size: 22px;">interesting!</p>`,
-  // };
+  //validate data.
+  if (method === "email") {
+    if (email !== account.email)
+      throw new ApiError(httpStatus.CONFLICT, "Email is not matching!");
 
-  //Send a new email.
-  // transporter.sendMail(mailOptions, (err, data) => {
-  //   if (err) {
-  //     console.error("Error " + err);
-  //     res
-  //       .status(httpStatus.OK)
-  //       .send({ response: `An error occured: ${err.message}` });
-  //   } else {
-  //     res.status(httpStatus.OK).send({ response: "Email sent successfully" });
-  //   }
-  // });
+    const passcode = passcodeGenerator.generate({ length: 10, numbers: true });
+
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(passcode, salt);
+
+    const currentTime = new Date().getTime();
+    const halfHour = 1800000; // in miliseconds
+    const expiresIn = new Date(currentTime + halfHour);
+    //update temporary passcode at db query.
+    await setTempPasscode(account.id, hash, expiresIn);
+
+    //sensitive data from .e  nv file.
+    const {
+      MAIL_USERNAME,
+      MAIL_PASSWORD,
+      OAUTH_CLIENTID,
+      OAUTH_CLIENT_SECRET,
+      OAUTH_REFRESH_TOKEN,
+    } = process.env;
+
+    //transport configuration object,
+    let transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        type: "OAuth2",
+        user: MAIL_USERNAME,
+        pass: MAIL_PASSWORD,
+        clientId: OAUTH_CLIENTID,
+        clientSecret: OAUTH_CLIENT_SECRET,
+        refreshToken: OAUTH_REFRESH_TOKEN,
+      },
+    });
+
+    //temp line
+    res.status(httpStatus.OK).send({
+      response: "done successfully",
+      passcode: passcode,
+      hash: hash,
+    });
+
+    //what data to send and to whom.
+    // let mailOptions = {
+    //   from: `${MAIL_USERNAME}@gmail.com`,
+    //   to: "mohammadfaour93@gmail.com",
+    //   subject: "GrayMatter Project",
+    //   // text: "Hi from your graymatter project",
+    //   html: `<h1>Mail Test</h1><p style="font-size: 26px;">Hi <span style="text-decoration: underline;">Mario</span>, <span style="color:red;font-size: 22px;">how can a localhost send a mesage to you?</span></p><p style="color:green; font-weight: bold; font-size: 22px;">interesting!</p>`,
+    // };
+
+    //Send a new email.
+    // transporter.sendMail(mailOptions, (err, data) => {
+    //   if (err) {
+    //     console.error("Error " + err);
+    //     res
+    //       .status(httpStatus.OK)
+    //       .send({ response: `An error occured: ${err.message}` });
+    //   } else {
+    //     res.status(httpStatus.OK).send({ response: "Email sent successfully" });
+    //   }
+    // });
+  }
+
+  if (method === "sms") {
+    if (phone !== account.phone)
+      throw new ApiError(httpStatus.CONFLICT, "Mobile number is not matching!");
+  }
 });
 
 export default {

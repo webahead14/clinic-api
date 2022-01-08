@@ -55,12 +55,12 @@ CREATE TABLE clients (
     id SERIAL PRIMARY KEY,
     passcode text,
     time_passcode text,
-    time_passcode_expiry DATE,
-    gov_id INTEGER UNIQUE,
+    time_passcode_expiry timestamp default '12/12/2012 12:12:12',
+    gov_id INTEGER UNIQUE not null,
     condition varchar(50),
     deleted boolean,
-    phone varchar(13),
-    email varchar(100),
+    phone varchar(13) UNIQUE,
+    email varchar(100) UNIQUE,
     name varchar(36),
     gender varchar(50)
 );
@@ -156,9 +156,9 @@ INSERT INTO protocols_surveys(survey_id,protocol_id,week) VALUES
     (1,4,6
 );
 
-INSERT INTO clients (passcode,time_passcode,time_passcode_expiry,gov_id,condition,deleted,phone,email,name,gender)
+INSERT INTO clients (passcode,time_passcode,gov_id,condition,deleted,phone,email,name,gender)
 VALUES
-('$2a$10$xl6RQwCyucfYs85hF/JdBuoHctXf5trwl8E3S8.EL0fSQt7p7yYU.','M4R70', '2022-01-16','212771406','PTSD',false,'0525080784','durd2001@gmail.com','George Joubran', 'male');
+('$2a$10$xl6RQwCyucfYs85hF/JdBuoHctXf5trwl8E3S8.EL0fSQt7p7yYU.','M4R70', '308431392','PTSD',false,'0525585306','mohammadfaour93@gmail.com','Mohammad Faur', 'male');
 
 
 -- Inserting into treatment, not needed for now, could use for later.
