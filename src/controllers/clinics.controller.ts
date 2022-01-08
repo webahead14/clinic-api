@@ -143,19 +143,19 @@ const sendTempPasscode = catchAsync(async (req, res) => {
       "You have exceeded your requests per minute."
     );
 
+  const passcode = passcodeGenerator.generate({ length: 10, numbers: true });
+
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(passcode, salt);
+
+  const currentTime = new Date().getTime();
+  const halfHour = 1800000; // in miliseconds
+  const expiresIn = new Date(currentTime + halfHour);
+
   //validate data.
   if (method === "email") {
     if (email !== account.email)
       throw new ApiError(httpStatus.NOT_FOUND, "Email is not matching!");
-
-    const passcode = passcodeGenerator.generate({ length: 10, numbers: true });
-
-    const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync(passcode, salt);
-
-    const currentTime = new Date().getTime();
-    const halfHour = 1800000; // in miliseconds
-    const expiresIn = new Date(currentTime + halfHour);
 
     //update temporary passcode at db query.
     await setTempPasscode(account.id, hash, expiresIn);
@@ -192,34 +192,42 @@ const sendTempPasscode = catchAsync(async (req, res) => {
     });
 
     //what data to send and to whom.
-    // let mailOptions = {
-    //   from: `${MAIL_USERNAME}@gmail.com`,
-    //   to: "mohammadfaour93@gmail.com",
-    //   subject: "GrayMatter Project",
-    //   // text: "Hi from your graymatter project",
-    //   html: `<h1>Mail Test</h1><p style="font-size: 26px;">Hi <span style="text-decoration: underline;">Mario</span>, <span style="color:red;font-size: 22px;">how can a localhost send a mesage to you?</span></p><p style="color:green; font-weight: bold; font-size: 22px;">interesting!</p>`,
-    // };
+    let mailOptions = {
+      from: `${MAIL_USERNAME}@gmail.com`,
+      to: "mohammadfaour93@gmail.com",
+      subject: "Gray Matter temporary passcode",
+      // text: "Hi from your graymatter project",
+      html: `<h2><em>Temporary Access Key</em></h2><div style="font-size: 22px;">Hi <span style="text-decoration: underline;">${account.name}</span>, <div style="font-size: 20px; margin-top: 10px;">Please use the passcode you've got below in order to sign in.</div></div>
+      <ul style="color:red;font-size: 18px;">
+      <li>Don't share this passcode with anyone.</li>
+      <li>The passcode will grante you access to your account for 30 minutes only. </li>
+      </ul>
+      <div style="font-weight: bold; font-size: 22px; border: 3px outset  LightBlue; width: fit-content; margin: 25px 30%; padding: 10px;
+        box-shadow: 5px 5px 8px CornflowerBlue; border-radius: 8px;">${passcode}</div>`,
+    };
 
     //Send a new email.
-    // transporter.sendMail(mailOptions, (err, data) => {
-    //   if (err) {
-    //     console.error("Error " + err);
-    //     res
-    //       .status(httpStatus.OK)
-    //       .send({ response: `An error occured: ${err.message}` });
-    //   } else {
-    //     res.status(httpStatus.OK).send({ response: "Email sent successfully" });
-    //   }
-    // });
+    transporter.sendMail(mailOptions, (err, data) => {
+      if (err) {
+        console.error("Error " + err);
+        res
+          .status(httpStatus.OK)
+          .send({ response: `An error occured: ${err.message}` });
+      } else {
+        res.status(httpStatus.OK).send({ response: "Email sent successfully" });
+      }
+    });
   }
 
-  if (method === "sms") {
-    if (phone !== account.phone)
-      throw new ApiError(
-        httpStatus.NOT_FOUND,
-        "Mobile number is not matching!"
-      );
-  }
+  // if (method === "sms") {
+  //   if (phone !== account.phone)
+  //     throw new ApiError(
+  //       httpStatus.NOT_FOUND,
+  //       "Mobile number is not matching!"
+  //     );
+
+  //   await setTempPasscode(account.id, hash, expiresIn);
+  // }
 });
 
 export default {
