@@ -125,11 +125,17 @@ const getAllSurveys = catchAsync(async (req, res) => {
 
 //Get temporary password by mail/sms
 const sendTempPasscode = catchAsync(async (req, res) => {
-  const { govId, email, phone, method } = req.body;
+  const { govId, email } = req.body;
 
   const account = await getClientByGovId(govId);
   if (typeof account === "undefined")
-    throw new ApiError(httpStatus.NOT_FOUND, "ID is not correct");
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "Government id number is not correct."
+    );
+
+  if (email !== account.email)
+    throw new ApiError(httpStatus.NOT_FOUND, "Email is not matching!");
 
   account.expiresIn = account.time_passcode_expiry;
   delete account.time_passcode_expiry;
@@ -153,104 +159,63 @@ const sendTempPasscode = catchAsync(async (req, res) => {
   const halfHour = 1800000; // in miliseconds
   const expiresIn = new Date(currentTime + halfHour);
 
-  //validate data.
-  if (method === "email") {
-    if (email !== account.email)
-      throw new ApiError(httpStatus.NOT_FOUND, "Email is not matching!");
+  //update temporary passcode at db query.
+  try {
+    await setTempPasscode(account.id, hash, expiresIn);
+  } catch (error) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `${error}`);
+  }
 
-    //update temporary passcode at db query.
-    try {
-      await setTempPasscode(account.id, hash, expiresIn);
-    } catch (error) {
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `${error}`);
-    }
+  //sensitive data from .env file.
+  const {
+    MAIL_USERNAME,
+    MAIL_PASSWORD,
+    OAUTH_CLIENTID,
+    OAUTH_CLIENT_SECRET,
+    OAUTH_REFRESH_TOKEN,
+  } = process.env;
 
-    //sensitive data from .env file.
-    const {
-      MAIL_USERNAME,
-      MAIL_PASSWORD,
-      OAUTH_CLIENTID,
-      OAUTH_CLIENT_SECRET,
-      OAUTH_REFRESH_TOKEN,
-    } = process.env;
+  //transport configuration object,
+  let transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      type: "OAuth2",
+      user: MAIL_USERNAME,
+      pass: MAIL_PASSWORD,
+      clientId: OAUTH_CLIENTID,
+      clientSecret: OAUTH_CLIENT_SECRET,
+      refreshToken: OAUTH_REFRESH_TOKEN,
+    },
+  });
 
-    //transport configuration object,
-    let transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-      auth: {
-        type: "OAuth2",
-        user: MAIL_USERNAME,
-        pass: MAIL_PASSWORD,
-        clientId: OAUTH_CLIENTID,
-        clientSecret: OAUTH_CLIENT_SECRET,
-        refreshToken: OAUTH_REFRESH_TOKEN,
-      },
-    });
-
-    //what data to send and to whom.
-    let mailOptions = {
-      from: `${MAIL_USERNAME}@gmail.com`,
-      to: `${email}`,
-      subject: "Gray Matter temporary passcode",
-      // text: "Hi from your graymatter project",
-      html: `<h2><em>Temporary Access Key</em></h2><div style="font-size: 22px;">Hi <span style="text-decoration: underline;">${account.name}</span>, <div style="font-size: 20px; margin-top: 10px;">Please use the passcode you've got below in order to sign in.</div></div>
+  //what data to send and to whom.
+  let mailOptions = {
+    from: `${MAIL_USERNAME}@gmail.com`,
+    to: `${email}`,
+    subject: "Gray Matter temporary passcode",
+    // text: "Hi from your graymatter project",
+    html: `<h2><em>Temporary Access Key</em></h2><div style="font-size: 22px;">Hi <span style="text-decoration: underline;">${account.name}</span>, <div style="font-size: 20px; margin-top: 10px;">Please use the passcode you've got below in order to sign in.</div></div>
       <ul style="color:red;font-size: 18px;">
       <li>Don't share this passcode with anyone.</li>
       <li>The passcode will grante you access to your account for 30 minutes only. </li>
       </ul>
       <div style="font-weight: bold; font-size: 22px; border: 3px outset  LightBlue; width: fit-content; margin: 25px 30%; padding: 10px;
         box-shadow: 5px 5px 8px CornflowerBlue; border-radius: 8px;">${passcode}</div>`,
-    };
+  };
 
-    //Send a new email.
-    transporter.sendMail(mailOptions, (err, data) => {
-      if (err) {
-        throw new ApiError(
-          httpStatus.BAD_REQUEST,
-          `An error occured: ${err.message}`
-        );
-      } else {
-        res
-          .status(httpStatus.OK)
-          .send({ response: "Email sent successfully." });
-      }
-    });
-  }
-
-  if (method === "sms") {
-    if (phone !== account.phone)
+  //Send a new email.
+  transporter.sendMail(mailOptions, (err, data) => {
+    if (err) {
       throw new ApiError(
-        httpStatus.NOT_FOUND,
-        "Mobile number is not matching!"
+        httpStatus.BAD_REQUEST,
+        `An error occured: ${err.message}`
       );
-
-    try {
-      await setTempPasscode(account.id, hash, expiresIn);
-    } catch (error) {
-      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `${error}`);
+    } else {
+      res.status(httpStatus.OK).send({ response: "Email sent successfully." });
     }
-
-    const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER } =
-      process.env;
-
-    const client = new Twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
-    client.messages
-      .create({
-        from: TWILIO_PHONE_NUMBER,
-        to: "+972" + phone.slice(1, 10),
-        body: `Your passcode is: ${passcode}`,
-      })
-      .then((message) => {
-        res.status(httpStatus.OK).send({
-          response: "SMS message sent successfully.",
-        });
-      })
-      .catch((err) => {
-        throw new ApiError(httpStatus.BAD_REQUEST, `${err.message}`);
-      });
-  }
+  });
 });
 
 export default {
