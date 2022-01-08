@@ -221,5 +221,5 @@ export default {
   getProtocols: getAllProtocols,
   getSurveys: getAllSurveys,
   getClientData: getClientData,
-  sendPassword: sendTempPasscode,
+  sendPasscode: sendTempPasscode,
 };
