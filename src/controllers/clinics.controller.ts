@@ -5,6 +5,7 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import passcodeGenerator from "generate-password";
 import bcrypt from "bcryptjs";
+import { Twilio } from "twilio";
 
 dotenv.config();
 
@@ -158,9 +159,13 @@ const sendTempPasscode = catchAsync(async (req, res) => {
       throw new ApiError(httpStatus.NOT_FOUND, "Email is not matching!");
 
     //update temporary passcode at db query.
-    await setTempPasscode(account.id, hash, expiresIn);
+    try {
+      await setTempPasscode(account.id, hash, expiresIn);
+    } catch (error) {
+      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `${error}`);
+    }
 
-    //sensitive data from .e  nv file.
+    //sensitive data from .env file.
     const {
       MAIL_USERNAME,
       MAIL_PASSWORD,
@@ -184,39 +189,34 @@ const sendTempPasscode = catchAsync(async (req, res) => {
       },
     });
 
-    //temp line
-    res.status(httpStatus.OK).send({
-      response: "done successfully",
-      passcode: passcode,
-      hash: hash,
+    //what data to send and to whom.
+    let mailOptions = {
+      from: `${MAIL_USERNAME}@gmail.com`,
+      to: `${email}`,
+      subject: "Gray Matter temporary passcode",
+      // text: "Hi from your graymatter project",
+      html: `<h2><em>Temporary Access Key</em></h2><div style="font-size: 22px;">Hi <span style="text-decoration: underline;">${account.name}</span>, <div style="font-size: 20px; margin-top: 10px;">Please use the passcode you've got below in order to sign in.</div></div>
+      <ul style="color:red;font-size: 18px;">
+      <li>Don't share this passcode with anyone.</li>
+      <li>The passcode will grante you access to your account for 30 minutes only. </li>
+      </ul>
+      <div style="font-weight: bold; font-size: 22px; border: 3px outset  LightBlue; width: fit-content; margin: 25px 30%; padding: 10px;
+        box-shadow: 5px 5px 8px CornflowerBlue; border-radius: 8px;">${passcode}</div>`,
+    };
+
+    //Send a new email.
+    transporter.sendMail(mailOptions, (err, data) => {
+      if (err) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          `An error occured: ${err.message}`
+        );
+      } else {
+        res
+          .status(httpStatus.OK)
+          .send({ response: "Email sent successfully." });
+      }
     });
-
-    // //what data to send and to whom.
-    // let mailOptions = {
-    //   from: `${MAIL_USERNAME}@gmail.com`,
-    //   to: "mohammadfaour93@gmail.com",
-    //   subject: "Gray Matter temporary passcode",
-    //   // text: "Hi from your graymatter project",
-    //   html: `<h2><em>Temporary Access Key</em></h2><div style="font-size: 22px;">Hi <span style="text-decoration: underline;">${account.name}</span>, <div style="font-size: 20px; margin-top: 10px;">Please use the passcode you've got below in order to sign in.</div></div>
-    //   <ul style="color:red;font-size: 18px;">
-    //   <li>Don't share this passcode with anyone.</li>
-    //   <li>The passcode will grante you access to your account for 30 minutes only. </li>
-    //   </ul>
-    //   <div style="font-weight: bold; font-size: 22px; border: 3px outset  LightBlue; width: fit-content; margin: 25px 30%; padding: 10px;
-    //     box-shadow: 5px 5px 8px CornflowerBlue; border-radius: 8px;">${passcode}</div>`,
-    // };
-
-    // //Send a new email.
-    // transporter.sendMail(mailOptions, (err, data) => {
-    //   if (err) {
-    //     console.error("Error " + err);
-    //     res
-    //       .status(httpStatus.OK)
-    //       .send({ response: `An error occured: ${err.message}` });
-    //   } else {
-    //     res.status(httpStatus.OK).send({ response: "Email sent successfully" });
-    //   }
-    // });
   }
 
   if (method === "sms") {
@@ -226,7 +226,30 @@ const sendTempPasscode = catchAsync(async (req, res) => {
         "Mobile number is not matching!"
       );
 
-    await setTempPasscode(account.id, hash, expiresIn);
+    try {
+      await setTempPasscode(account.id, hash, expiresIn);
+    } catch (error) {
+      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `${error}`);
+    }
+
+    const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER } =
+      process.env;
+
+    const client = new Twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+    client.messages
+      .create({
+        from: TWILIO_PHONE_NUMBER,
+        to: "+972" + phone.slice(1, 10),
+        body: `Your passcode is: ${passcode}`,
+      })
+      .then((message) => {
+        res.status(httpStatus.OK).send({
+          response: "SMS message sent successfully.",
+        });
+      })
+      .catch((err) => {
+        throw new ApiError(httpStatus.BAD_REQUEST, `${err.message}`);
+      });
   }
 });
 

@@ -158,7 +158,7 @@ INSERT INTO protocols_surveys(survey_id,protocol_id,week) VALUES
 
 INSERT INTO clients (passcode,time_passcode,gov_id,condition,deleted,phone,email,name,gender)
 VALUES
-('$2a$10$xl6RQwCyucfYs85hF/JdBuoHctXf5trwl8E3S8.EL0fSQt7p7yYU.','M4R70', '308431392','PTSD',false,'0525585306','mohammadfaour93@gmail.com','Mohammad Faur', 'male');
+('$2a$10$xl6RQwCyucfYs85hF/JdBuoHctXf5trwl8E3S8.EL0fSQt7p7yYU.','M4R70','212771406','PTSD',false,'0525080784','durd2001@gmail.com','George Joubran', 'male');
 
 
 -- Inserting into treatment, not needed for now, could use for later.
