@@ -5,7 +5,6 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import passcodeGenerator from "generate-password";
 import bcrypt from "bcryptjs";
-import { Twilio } from "twilio";
 
 dotenv.config();
 
