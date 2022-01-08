@@ -123,26 +123,30 @@ const getAllSurveys = catchAsync(async (req, res) => {
 });
 
 //Get temporary password by mail/sms
-const sendTempPass = catchAsync(async (req, res) => {
+const sendTempPasscode = catchAsync(async (req, res) => {
   const { govId, email, phone, method } = req.body;
 
   const account = await getClientByGovId(govId);
+  if (typeof account === "undefined")
+    throw new ApiError(httpStatus.NOT_FOUND, "ID is not correct");
+
   account.expiresIn = account.time_passcode_expiry;
   delete account.time_passcode_expiry;
-  const twoMinutes = 120000; //in miliseconds
 
-  console.log(
-    new Date() > new Date(account.expiresIn.getTime() + twoMinutes),
-    "now: ",
-    new Date(),
-    "expiresIn + 2 mins:",
-    new Date(account.expiresIn.getTime() + twoMinutes)
-  );
+  const balancedTime = 1680000; // 28 minutes in miliseconds
+  //expiresIn - 30 min + 2min
+  const timeBeforeTwoMinutes = account.expiresIn.getTime() - balancedTime; //since the client got his latest passcode.
+
+  if (new Date() < new Date(timeBeforeTwoMinutes))
+    throw new ApiError(
+      httpStatus.TOO_MANY_REQUESTS,
+      "You have exceeded your requests per minute."
+    );
 
   //validate data.
   if (method === "email") {
     if (email !== account.email)
-      throw new ApiError(httpStatus.CONFLICT, "Email is not matching!");
+      throw new ApiError(httpStatus.NOT_FOUND, "Email is not matching!");
 
     const passcode = passcodeGenerator.generate({ length: 10, numbers: true });
 
@@ -152,6 +156,7 @@ const sendTempPass = catchAsync(async (req, res) => {
     const currentTime = new Date().getTime();
     const halfHour = 1800000; // in miliseconds
     const expiresIn = new Date(currentTime + halfHour);
+
     //update temporary passcode at db query.
     await setTempPasscode(account.id, hash, expiresIn);
 
@@ -210,7 +215,10 @@ const sendTempPass = catchAsync(async (req, res) => {
 
   if (method === "sms") {
     if (phone !== account.phone)
-      throw new ApiError(httpStatus.CONFLICT, "Mobile number is not matching!");
+      throw new ApiError(
+        httpStatus.NOT_FOUND,
+        "Mobile number is not matching!"
+      );
   }
 });
 
@@ -218,5 +226,5 @@ export default {
   getProtocols: getAllProtocols,
   getSurveys: getAllSurveys,
   getClientData: getClientData,
-  sendPassword: sendTempPass,
+  sendPassword: sendTempPasscode,
 };
