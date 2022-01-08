@@ -191,43 +191,43 @@ const sendTempPasscode = catchAsync(async (req, res) => {
       hash: hash,
     });
 
-    //what data to send and to whom.
-    let mailOptions = {
-      from: `${MAIL_USERNAME}@gmail.com`,
-      to: "mohammadfaour93@gmail.com",
-      subject: "Gray Matter temporary passcode",
-      // text: "Hi from your graymatter project",
-      html: `<h2><em>Temporary Access Key</em></h2><div style="font-size: 22px;">Hi <span style="text-decoration: underline;">${account.name}</span>, <div style="font-size: 20px; margin-top: 10px;">Please use the passcode you've got below in order to sign in.</div></div>
-      <ul style="color:red;font-size: 18px;">
-      <li>Don't share this passcode with anyone.</li>
-      <li>The passcode will grante you access to your account for 30 minutes only. </li>
-      </ul>
-      <div style="font-weight: bold; font-size: 22px; border: 3px outset  LightBlue; width: fit-content; margin: 25px 30%; padding: 10px;
-        box-shadow: 5px 5px 8px CornflowerBlue; border-radius: 8px;">${passcode}</div>`,
-    };
+    // //what data to send and to whom.
+    // let mailOptions = {
+    //   from: `${MAIL_USERNAME}@gmail.com`,
+    //   to: "mohammadfaour93@gmail.com",
+    //   subject: "Gray Matter temporary passcode",
+    //   // text: "Hi from your graymatter project",
+    //   html: `<h2><em>Temporary Access Key</em></h2><div style="font-size: 22px;">Hi <span style="text-decoration: underline;">${account.name}</span>, <div style="font-size: 20px; margin-top: 10px;">Please use the passcode you've got below in order to sign in.</div></div>
+    //   <ul style="color:red;font-size: 18px;">
+    //   <li>Don't share this passcode with anyone.</li>
+    //   <li>The passcode will grante you access to your account for 30 minutes only. </li>
+    //   </ul>
+    //   <div style="font-weight: bold; font-size: 22px; border: 3px outset  LightBlue; width: fit-content; margin: 25px 30%; padding: 10px;
+    //     box-shadow: 5px 5px 8px CornflowerBlue; border-radius: 8px;">${passcode}</div>`,
+    // };
 
-    //Send a new email.
-    transporter.sendMail(mailOptions, (err, data) => {
-      if (err) {
-        console.error("Error " + err);
-        res
-          .status(httpStatus.OK)
-          .send({ response: `An error occured: ${err.message}` });
-      } else {
-        res.status(httpStatus.OK).send({ response: "Email sent successfully" });
-      }
-    });
+    // //Send a new email.
+    // transporter.sendMail(mailOptions, (err, data) => {
+    //   if (err) {
+    //     console.error("Error " + err);
+    //     res
+    //       .status(httpStatus.OK)
+    //       .send({ response: `An error occured: ${err.message}` });
+    //   } else {
+    //     res.status(httpStatus.OK).send({ response: "Email sent successfully" });
+    //   }
+    // });
   }
 
-  // if (method === "sms") {
-  //   if (phone !== account.phone)
-  //     throw new ApiError(
-  //       httpStatus.NOT_FOUND,
-  //       "Mobile number is not matching!"
-  //     );
+  if (method === "sms") {
+    if (phone !== account.phone)
+      throw new ApiError(
+        httpStatus.NOT_FOUND,
+        "Mobile number is not matching!"
+      );
 
-  //   await setTempPasscode(account.id, hash, expiresIn);
-  // }
+    await setTempPasscode(account.id, hash, expiresIn);
+  }
 });
 
 export default {
