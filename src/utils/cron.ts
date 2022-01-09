@@ -8,6 +8,7 @@ let updateMissedJob = new CronJob(
     const clients = await db
       .query(`SELECT client_id FROM treatment WHERE status='on-going'`)
       .then(({ rows }) => rows);
+
     clients.forEach(async (client) => {
       const clientSurveys = await db
         .query(
@@ -15,6 +16,7 @@ let updateMissedJob = new CronJob(
           [client.client_id]
         )
         .then(({ rows }) => rows);
+
       clientSurveys.forEach((survey) => {
         const currDate = moment(moment().toDate()).format("L");
         const surveyDate = moment(survey.survey_date).format("L");
@@ -25,6 +27,15 @@ let updateMissedJob = new CronJob(
           );
         }
       });
+      //resetting reminders
+      let reminders = {
+        ...client.reminders,
+        has_sent: false,
+      };
+      db.query(`UPDATE treatment SET reminders = $1 ON client_id = $2`, [
+        reminders,
+        client,
+      ]);
     });
   },
   null,
@@ -38,6 +49,37 @@ let remindersJob = new CronJob(
     const clients = await db
       .query(`SELECT client_id FROM treatment WHERE status='on-going'`)
       .then(({ rows }) => rows);
+
+    clients.forEach(async (client) => {
+      const clientSurveys = await db
+        .query(
+          `SELECT * from clients_surveys WHERE client_id = $1 AND is_done = 'false' AND has_missed = 'false'`,
+          [client.client_id]
+        )
+        .then(({ rows }) => rows);
+
+      clientSurveys.forEach((survey) => {
+        const currDate = moment(moment().toDate()).format("L");
+        const surveyDate = moment(survey.survey_date).format("L");
+        if (currDate === surveyDate) {
+          if (
+            !client.reminders.hasSent &&
+            client.reminders.time === moment().format("HH:mm")
+          ) {
+            //update hasSent to true
+            let reminders = {
+              ...client.reminders,
+              has_sent: true,
+            };
+            db.query(`UPDATE treatment SET reminders = $1 ON client_id = $2`, [
+              reminders,
+              client,
+            ]);
+            //send email
+          }
+        }
+      });
+    });
   },
   null,
   true,
