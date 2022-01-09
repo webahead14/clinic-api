@@ -131,7 +131,7 @@ export function getProtocol(id) {
     });
 }
 
-//get matrix on specific language.
+//get matrix by matrixID on specific language.
 export function fetchMatrix(id, lang = "en") {
   if (lang === "en")
     return db
@@ -145,5 +145,26 @@ export function fetchMatrix(id, lang = "en") {
         [id, lang]
       )
       .then((matrix) => matrix.rows[0]);
+  }
+}
+
+//get questions by surveyID on specific language
+export function fetchQuestions(surveyID, lang = "en") {
+  if (lang === "en")
+    return db
+      .query(
+        `SELECT * FROM questions_surveys LEFT JOIN questions ON questions_surveys.question_id = 
+      questions.id WHERE survey_id = $1`,
+        [surveyID]
+      )
+      .then((questions) => questions.rows);
+  else {
+    return db
+      .query(
+        `SELECT * FROM questions_surveys LEFT JOIN questions_language ON questions_surveys.question_id = 
+        questions_language.question_id WHERE survey_id = $1 AND questions_language.language = $2`,
+        [surveyID, lang]
+      )
+      .then((questions) => questions.rows);
   }
 }
