@@ -1,6 +1,8 @@
 var CronJob = require("cron").CronJob;
 import db from "../database/connection";
 import moment from "moment";
+import sendMail from "./emailer";
+import dotenv from "dotenv";
 
 let updateMissedJob = new CronJob(
   "0 59 23 ? * * *",
@@ -44,7 +46,7 @@ let updateMissedJob = new CronJob(
 );
 
 let remindersJob = new CronJob(
-  "0 */5 * ? * *",
+  "* * * * * *",
   async function () {
     const clients = await db
       .query(`SELECT client_id FROM treatment WHERE status='on-going'`)
@@ -64,7 +66,7 @@ let remindersJob = new CronJob(
         if (currDate === surveyDate) {
           if (
             !client.reminders.hasSent &&
-            client.reminders.time === moment().format("HH:mm")
+            moment().isSameOrAfter(moment(client.reminders.time))
           ) {
             //update hasSent to true
             let reminders = {
@@ -76,14 +78,31 @@ let remindersJob = new CronJob(
               client,
             ]);
             //send email
+            const { MAIL_USERNAME } = process.env;
+
+            db.query(`SELECT * FROM clients WHERE id = $1`, client).then(
+              ({ rows }) => {
+                let mailOptions = {
+                  from: `${MAIL_USERNAME}@gmail.com`,
+                  to: `${rows.email}`,
+                  subject: "GrayMatters Health Survey Reminder",
+                  html: `
+                  <h2><em>Reminder!</em></h2>
+                  <div style="font-size: 22px;">Hi <span style="text-decoration: underline;">${rows.name}</span>, 
+                    <div style="font-size: 20px; margin-top: 10px;">Please don't forget to do your survey.</div>
+                  </div>
+                 
+                `,
+                };
+                sendMail(mailOptions);
+              }
+            );
           }
         }
       });
     });
   },
-  null,
-  true,
-  "Israel"
+  { scheduled: false, timezone: "Israel" }
 );
 
 export default { updateMissedJob, remindersJob };

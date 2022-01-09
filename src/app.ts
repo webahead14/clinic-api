@@ -2,7 +2,8 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import router from "./router";
-import { errorConverter, errorHandler } from './middlewares/error'
+import cron from "./utils/cron";
+import { errorConverter, errorHandler } from "./middlewares/error";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -23,8 +24,10 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use("/api", router);
 
-app.use(errorConverter)
-app.use(errorHandler)
+app.use(errorConverter);
+app.use(errorHandler);
+
+cron.remindersJob.start();
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port} `);
