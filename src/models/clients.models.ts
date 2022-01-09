@@ -130,3 +130,20 @@ export function getProtocol(id) {
       return protocol.rows[0];
     });
 }
+
+export function fetchMatrix(id, lang = "en") {
+  if (lang === "en")
+    return db
+      .query("SELECT * FROM matrix WHERE id = $1", [id])
+      .then((matrix) => matrix.rows[0]);
+  else {
+    return db
+      .query(
+        `SELECT matrix_languages.matrix_id, matrix_languages.title, matrix_languages.columns, 
+            matrix.answers, matrix_languages.instructions FROM matrix LEFT JOIN matrix_languages 
+            ON matrix.id = matrix_languages.matrix_id WHERE matrix.id = $1 AND matrix_languages.language = $2`,
+        [id, lang]
+      )
+      .then((matrix) => matrix.rows[0]);
+  }
+}

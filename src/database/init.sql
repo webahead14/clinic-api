@@ -1,6 +1,6 @@
 BEGIN;
 
-DROP TABLE IF EXISTS protocols_surveys,clinics,questions,matrix,surveys,protocols,clients,clients_surveys,questions_surveys,answers,treatment CASCADE;
+DROP TABLE IF EXISTS protocols_surveys,clinics,questions,matrix,matrix_languages,surveys,protocols,clients,clients_surveys,questions_surveys,answers,treatment CASCADE;
 DROP TYPE IF EXISTS treatment_status CASCADE;
 
 CREATE TYPE treatment_status AS ENUM ('on-going', 'finished');
@@ -40,6 +40,15 @@ CREATE TABLE matrix(
     columns json,
     answers json,
     instructions varchar(255)
+);
+
+CREATE TABLE matrix_languages(
+    id SERIAL PRIMARY KEY,
+    matrix_id INTEGER REFERENCES matrix(id),
+    title varchar(255),
+    columns json,
+    instructions varchar(255),
+    language varchar(2)
 );
 
 CREATE TABLE questions (
@@ -103,6 +112,22 @@ INSERT INTO matrix (id,title,columns,answers,instructions) VALUES(
     '["Poorly","Semi-Poorly","Avarage","Semi-Strongly","Strongly"]',
     '["0", "1", "2", "3", "4"]',
     'Below is a list of problems and complaints that people sometimes have in response to stressful life experiences. How much you have been bothered by that problem IN THE LAST MONTH.'
+);
+
+INSERT INTO matrix_languages (matrix_id,title,columns,instructions,language) VALUES
+(
+    1,
+    'האם אתה מוטרד מ:',
+    '["אף פעם לא","לעיתים רחוקות","לפעמים","לעיתים תכופות","לעיתים תכופות מאוד"]',
+    'להלן רשימה של בעיות ותלונות שאנשים לפעמים חוים בתגובה לחיים מלחיצות. עד כמה הוטרדת מהבעיה הזו בחודש האחרון.',
+    'he'
+),
+(
+    1,
+    'هل تشعر بالضيق من:',
+    '["نادرًا","قليلًا","بشكل متوسط","غالبًا","دائمًا"]',
+    'فيما يلي قائمة بالمشكلات والشكاوي التي يواجهها الأشخاص أحيانًا بسبب تجارب حياتية مرهقة. ما مدى انزعاجك من كل مشكلة على حِدَةٍ في الشهر الماضي.',
+    'ar'
 );
 
 INSERT INTO questions (id,question,type,"group",matrix_id,extra_data) VALUES
