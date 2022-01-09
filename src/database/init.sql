@@ -1,6 +1,6 @@
 BEGIN;
 
-DROP TABLE IF EXISTS protocols_surveys,clinics,questions,matrix,surveys,protocols,clients,clients_surveys,questions_surveys,answers,treatment CASCADE;
+DROP TABLE IF EXISTS protocols_surveys,clinics,questions,questions_language,matrix,matrix_languages,surveys,protocols,clients,clients_surveys,questions_surveys,answers,treatment CASCADE;
 DROP TYPE IF EXISTS treatment_status CASCADE;
 
 CREATE TYPE treatment_status AS ENUM ('on-going', 'finished');
@@ -42,6 +42,15 @@ CREATE TABLE matrix(
     instructions varchar(255)
 );
 
+CREATE TABLE matrix_languages(
+    id SERIAL PRIMARY KEY,
+    matrix_id INTEGER REFERENCES matrix(id),
+    title varchar(255),
+    columns json,
+    instructions varchar(255),
+    language varchar(2)
+);
+
 CREATE TABLE questions (
     id SERIAL PRIMARY KEY,
     matrix_id INTEGER REFERENCES matrix(id),
@@ -50,6 +59,15 @@ CREATE TABLE questions (
     question varchar(255),
     extra_data json
 );
+
+CREATE TABLE questions_language (
+    id SERIAL PRIMARY KEY,
+    question_id INTEGER REFERENCES questions(id),
+    question varchar(255),
+    extra_data json,
+    language varchar(2)
+);
+
 
 CREATE TABLE clients (
     id SERIAL PRIMARY KEY,
@@ -105,14 +123,48 @@ INSERT INTO matrix (id,title,columns,answers,instructions) VALUES(
     'Below is a list of problems and complaints that people sometimes have in response to stressful life experiences. How much you have been bothered by that problem IN THE LAST MONTH.'
 );
 
+INSERT INTO matrix_languages (matrix_id,title,columns,instructions,language) VALUES
+(
+    1,
+    'האם אתה מוטרד מ:',
+    '["אף פעם לא","לעיתים רחוקות","לפעמים","לעיתים תכופות","לעיתים תכופות מאוד"]',
+    'להלן רשימה של בעיות ותלונות שאנשים לפעמים חוים בתגובה לחיים מלחיצות. עד כמה הוטרדת מהבעיה הזו בחודש האחרון.',
+    'he'
+),
+(
+    1,
+    'هل تشعر بالضيق من:',
+    '["نادرًا","قليلًا","بشكل متوسط","غالبًا","دائمًا"]',
+    'فيما يلي قائمة بالمشكلات والشكاوي التي يواجهها الأشخاص أحيانًا بسبب تجارب حياتية مرهقة. ما مدى انزعاجك من كل مشكلة على حِدَةٍ في الشهر الماضي.',
+    'ar'
+);
+
 INSERT INTO questions (id,question,type,"group",matrix_id,extra_data) VALUES
     (1,'Feeling very upset when something reminds you of the stressful experience?','matrix','group_xyz',1,'{}'),
     (2,'Trouble remembering important parts of the stressful experience?','matrix','group_xyz',1,'{}'),
     (3,'Loss of interest in activities that you used to enjoy?','matrix','group_xyz',1,'{}'),
     (4,'Irritable behaviour, angry outbursts, or acting aggressively?','matrix','group_xyz',1,'{}'),
-    (5,'Which choice of the choices below you think it will impact you stress the most?','multiple_choice','group_xyz_multi1',null,'{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "Smoke"},{"text": "Exercise"},{"text": "Drink alcohol"},{"text": "Eat"}]}}'),
+    (5,'Which choice of the choices below you think it will impact your stress the most?','multiple_choice','group_xyz_multi1',null,'{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "Smoke"},{"text": "Exercise"},{"text": "Drink alcohol"},{"text": "Eat"}]}}'),
     (6,'Mark the type of pains you''ve encountered lately:','multiple_choice','group_xyz_multi2',null,'{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "Physical Pain"},{"text": "Mental Pain"},{"text": "Spiritual Pain"}]}}'),
     (7,'Anything else?','open_text','group_xyz_open',null,'{"openText": {"inputPlaceholder": "Please write the answer here"}}'
+);
+
+INSERT INTO questions_language (question_id, question, extra_data,language) VALUES
+    (1,'מרגישים מוטרדים מאוד כשמשהו מזכיר לכם את החוויה המלחיצה?','{}','he'),
+    (2,'מתקשים לזכור חלקים חשובים מהחוויה המלחיצה?','{}','he'),
+    (3,'אובדן עניין בפעילויות שנהניתם מהן?','{}','he'),
+    (4,'התנהגות עצבנית, התפרצויות כעס או התנהגות אגרסיבית?','{}','he'),
+    (5,'איזו בחירה מבין האפשרויות למטה לדעתך תשפיע הכי הרבה עליך מבחנת לחץ?','{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "עישון"},{"text": "ספורט"},{"text": "אלכוהול"},{"text": "אוכל"}]}}','he'),
+    (6,'סמן את סוג הכאבים שנתקלת בהם לאחרונה:','{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "כאב פיזי"},{"text": "כאב נפשי"},{"text": "כאב רוחני"}]}}','he'),
+    (7,'עוד משהו להוסיף?','{"openText": {"inputPlaceholder": "נא לכתוב כאן את התשובה"}}','he'
+),
+    (1,'هل تشعر بالضيق الشديد عندما تتذكر معاناة الضغوطات الحياتية؟','{}','ar'),
+    (2,'هل تواجه صعوبة في تذكر أجزاء مهمة من معاناة الضغوطات الحياتية التي خضتها؟','{}','ar'),
+    (3,'فقدان الاهتمام بالفعاليات التي كنت تستمتع بها؟','{}','ar'),
+    (4,'سلوك عصبي ، نوبات غضب ، أو التصرف بعدوانية؟','{}','ar'),
+    (5,'أي اختيار من الخيارات أدناه تعتقد أنه سيؤثر عليك أكثر؟','{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "التدخين"},{"text": "التمارين الرياضية"},{"text": "المشروبات الروحية"},{"text": "الأكل"}]}}','ar'),
+    (6,'حدد نوع الآلام التي واجهتها مؤخرًا:','{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "ألم جسدي"},{"text": "ألم نفسي"},{"text": "ألم روحاني"}]}}','ar'),
+    (7,'أي شيء آخر؟','{"openText": {"inputPlaceholder": "من فضلك اكتب الجواب هنا"}}','ar'
 );
 
 INSERT INTO clinics VALUES (
