@@ -140,8 +140,7 @@ export function fetchMatrix(id, lang = "en") {
   else {
     return db
       .query(
-        `SELECT matrix_languages.matrix_id, matrix_languages.title, matrix_languages.columns, 
-            matrix.answers, matrix_languages.instructions FROM matrix LEFT JOIN matrix_languages 
+        `SELECT * FROM matrix LEFT JOIN matrix_languages 
             ON matrix.id = matrix_languages.matrix_id WHERE matrix.id = $1 AND matrix_languages.language = $2`,
         [id, lang]
       )
