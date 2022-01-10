@@ -146,7 +146,9 @@ const sendTempPasscode = catchAsync(async (req, res) => {
   if (new Date() < new Date(timeBeforeTwoMinutes))
     throw new ApiError(
       httpStatus.TOO_MANY_REQUESTS,
-      "You have exceeded your requests per minute."
+      `You have exceeded your requests per minute. try after: ${new Date(
+        timeBeforeTwoMinutes
+      ).toLocaleTimeString()}`
     );
 
   const passcode = passcodeGenerator.generate({ length: 10, numbers: true });
@@ -193,15 +195,16 @@ const sendTempPasscode = catchAsync(async (req, res) => {
   let mailOptions = {
     from: `${MAIL_USERNAME}@gmail.com`,
     to: `${email}`,
-    subject: "Gray Matter temporary passcode",
-    // text: "Hi from your graymatter project",
-    html: `<h2><em>Temporary Access Key</em></h2><div style="font-size: 22px;">Hi <span style="text-decoration: underline;">${account.name}</span>, <div style="font-size: 20px; margin-top: 10px;">Please use the passcode you've got below in order to sign in.</div></div>
-      <ul style="color:red;font-size: 18px;">
-      <li>Don't share this passcode with anyone.</li>
-      <li>The passcode will grante you access to your account for 30 minutes only. </li>
-      </ul>
-      <div style="font-weight: bold; font-size: 22px; border: 3px outset  LightBlue; width: fit-content; margin: 25px 30%; padding: 10px;
-        box-shadow: 5px 5px 8px CornflowerBlue; border-radius: 8px;">${passcode}</div>`,
+    subject: "GrayMatters Healthtemporary passcode",
+    html: `<div style="font-size: 22px;">Hi, ${account.name}</span>, <div style="font-size: 20px; margin-top: 10px;">We received a request for a temporary passcode. Please use the passcode below in order to sign in.</div></div>
+    <ul style="color: red; font-size: 18px;">
+    <li>Do not share this passcode with anyone.</li>
+    <li>The passcode will grant you access to your account for 30 minutes.  </li>
+    <li>In the event that your passcode expires, try requesting another one through our login page.</li>
+    </ul>
+    <h2 style="margin: 25px 30%; font-size:22px;">Temporary Access Key</h2>
+    <div style="font-weight: bold; font-size: 22px; border: 3px outset  LightBlue; width: fit-content; margin: 25px 35%; padding: 10px;
+      box-shadow: 5px 5px 8px CornflowerBlue; border-radius: 8px;">${passcode}</div>`,
   };
 
   //Send a new email.
