@@ -2,6 +2,7 @@ import express from "express";
 
 import generalController from "./controllers/general";
 import clientController from "./controllers/clients.controller";
+import clinicController from "./controllers/clinics.controller";
 
 const router = express.Router();
 

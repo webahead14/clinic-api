@@ -1,119 +1,152 @@
 import db from "../database/connection";
-// import moment from "moment";
 import moment from "moment-timezone";
 import sendMail from "./emailer";
 import cron from "node-cron";
 
+// In case client/patient did not finish the survey in time (before midnight that is)
+// then this cron job will update the database that the user missed the survey
 const updateMissedJob = () =>
+  // runs everyday on midnight
   cron.schedule("0 59 23 * * *", async function () {
-    const clients = await db
+    const treatments = await db
       .query(`SELECT client_id FROM treatment WHERE status='on-going'`)
       .then(({ rows }) => rows);
 
-    clients.forEach(async (client) => {
+    treatments.forEach(async (treatment) => {
       const clientSurveys = await db
         .query(
           `SELECT * from clients_surveys WHERE client_id = $1 AND is_done = 'false' AND has_missed = 'false'`,
-          [client.client_id]
+          // in the future if a client can have multiple treatments, then this
+          // needs to be more specific
+          [treatment.client_id]
         )
         .then(({ rows }) => rows);
 
       clientSurveys.forEach((survey) => {
         const currDate = moment(moment().toDate()).format("L");
+
         const surveyDate = moment(survey.survey_date).format("L");
+
         if (currDate === surveyDate) {
           db.query(
-            `UPDATE clients_surveys SET has_missed = 'true' WHERE client_id = $1`,
-            [client.client_id]
+            `UPDATE clients_surveys SET has_missed = 'true' WHERE id = $2`,
+            [survey.id]
           );
         }
       });
-      //resetting reminders
-      let reminders = {
-        ...client.reminders,
+
+      // resetting reminders
+      const reminders = treatment.reminders.map((reminder) => ({
+        ...reminder,
         has_sent: false,
-      };
-      db.query(`UPDATE treatment SET reminders = $1 ON client_id = $2`, [
-        reminders,
-        client,
+      }));
+
+      db.query(`UPDATE treatment SET reminders = $1 ON id = $2`, [
+        JSON.stringify(reminders),
+        treatment.id,
       ]);
     });
   });
 
+// A cron job that runs every 5 minutes to check which clients/patients have surveys today
+// and decide when to send them a reminder for it (currently only supports email)
 const remindersJob = () =>
   cron.schedule("* */5 * * * *", async function () {
-    const clients = await db
-      .query(`SELECT * FROM treatment WHERE status='on-going'`)
-      .then(({ rows }) => rows);
-
-    clients.forEach(async (client) => {
-      const clientSurveys = await db
-        .query(
-          `SELECT * from clients_surveys WHERE client_id = $1 AND is_done = 'false' AND has_missed = 'false'`,
-          [client.client_id]
-        )
+    try {
+      const treatments = await db
+        .query(`SELECT * FROM treatment WHERE status='on-going'`)
         .then(({ rows }) => rows);
-      if (clientSurveys.length == 0) return;
-      const currDate = moment(moment().toDate()).format("L");
-      const surveyDate = moment(clientSurveys[0].survey_date).format("L");
-      var sent = false;
 
-      if (currDate === surveyDate) {
-        client.reminders.forEach(async (reminder) => {
-          if (!sent) {
-            var time = moment().tz("Asia/Jerusalem");
-            time.set({
-              hour: +reminder.time.split(":")[0],
-              minute: +reminder.time.split(":")[1],
+      treatments.forEach(async (treatment) => {
+        const clientSurveys = await db
+          .query(
+            `SELECT * from clients_surveys WHERE client_id = $1 AND is_done = 'false' AND has_missed = 'false'`,
+            [treatment.client_id]
+          )
+          .then(({ rows }) => rows);
+
+        if (clientSurveys.length == 0) return;
+
+        const currDate = moment(moment().toDate()).format("L");
+        // 1 survey is enough indication to know when to show the client/patient
+        // a reminder
+        const surveyDate = moment(clientSurveys[0].survey_date).format("L");
+
+        var sent = false;
+
+        if (currDate === surveyDate) {
+          treatment.reminders.forEach(async (reminder) => {
+            if (sent) {
+              return;
+            }
+
+            const reminderTime = moment().tz("Asia/Jerusalem");
+            // for example reminderTime -> 14:30
+            const [hour, minute] = reminder.time.split(":").map((x) => +x);
+
+            reminderTime.set({
+              hour,
+              minute,
               second: 0,
               millisecond: 0,
             });
+
             if (
               !reminder.has_sent &&
-              moment().tz("Asia/Jerusalem").isSameOrAfter(time)
+              moment().tz("Asia/Jerusalem").isSameOrAfter(reminderTime)
             ) {
-              //update hasSent to true
-              let reminders = client.reminders.filter(
+              // remove the reminder from the reminders array so later
+              // we can add it with has_sent true
+              let reminders = treatment.reminders.filter(
                 (tempReminder) => tempReminder.time !== reminder.time
               );
+
               reminders = [
                 ...reminders,
                 { time: reminder.time, has_sent: true },
               ];
-              db.query(
-                "UPDATE treatment SET reminders = $1 WHERE client_id = $2",
-                [JSON.stringify(reminders), client.client_id]
-              );
-              //send email
+
+              db.query("UPDATE treatment SET reminders = $1 WHERE id = $2", [
+                JSON.stringify(reminders),
+                treatment.id,
+              ]);
+
+              // send email
               const { MAIL_USERNAME } = process.env;
+
               const clientData = await db
                 .query(`SELECT * FROM clients WHERE id = $1`, [
-                  client.client_id,
+                  treatment.client_id,
                 ])
                 .then(({ rows }) => rows[0]);
-              //formatting all client surveys to <li></li> elements
-              let surveyList = await Promise.all(
-                clientSurveys.map(async (survey) => {
+
+              // formatting all client surveys to <li></li> elements
+              const surveyList = await Promise.all(
+                clientSurveys.reduce(async (acc, survey) => {
                   const surveyData = await db
                     .query(`SELECT * FROM surveys WHERE id=$1`, [
                       survey.survey_id,
                     ])
                     .then(({ rows }) => rows[0]);
-                  return `<li>${surveyData.name}</li>`;
-                })
+
+                  return acc + `<li>${surveyData.name}</li>`;
+                }, "")
               );
-              //calculating time left
-              let midnight = moment().set({
+
+              // calculating time left
+              const midnight = moment().set({
                 hour: 23,
                 minute: 59,
                 second: 59,
                 millisecond: 0,
               });
-              let now = moment();
-              var x = midnight.diff(now);
-              var tempTime = moment.duration(x);
-              var remainingTime = tempTime.hours() + ":" + tempTime.minutes();
-              let mailOptions = {
+
+              const now = moment();
+              const timeDifference = midnight.diff(now);
+              const tempTime = moment.duration(timeDifference);
+              const remainingTime = tempTime.hours() + ":" + tempTime.minutes();
+
+              const mailOptions = {
                 from: `${MAIL_USERNAME}@gmail.com`,
                 to: `${clientData.email}`,
                 subject: "GrayMatters Health Survey Reminder",
@@ -126,13 +159,7 @@ const remindersJob = () =>
                   </div>
                   <div>
                     <ul>
-                    ${(function showList() {
-                      let output = "";
-                      for (let i = 0; i < surveyList.length; i++) {
-                        output += surveyList[i];
-                      }
-                      return output;
-                    })()}
+                    ${surveyList}
                     </ul>
                   </div>
                   <span style="font-size: 20px; margin-top: 10px">Time remaining: ${remainingTime} hours</span>
@@ -142,10 +169,12 @@ const remindersJob = () =>
               sendMail(mailOptions);
               sent = true;
             }
-          }
-        });
-      }
-    });
+          });
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
   });
 
 export default { updateMissedJob, remindersJob };

@@ -49,7 +49,6 @@ const createClient = catchAsync(async (req: any, res: any) => {
   ) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Missing data");
   }
-  console.log(reminders);
 
   const checkExists = (await getClient(govId))[0];
 
