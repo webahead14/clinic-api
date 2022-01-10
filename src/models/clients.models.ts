@@ -9,10 +9,7 @@ export function fetchClients() {
 
 export function fetchSurveysByProtocolId(protocolId) {
   return db
-    .query(
-      "SELECT * FROM protocols_surveys ps INNER JOIN surveys ON surveys.id = ps.survey_id WHERE ps.protocol_id = $1",
-      [protocolId]
-    )
+    .query("SELECT * FROM protocols_surveys ps INNER JOIN surveys ON surveys.id = ps.survey_id WHERE ps.protocol_id = $1", [protocolId])
     .then((surveys) => surveys.rows);
 }
 
@@ -42,15 +39,7 @@ export function createTreatment(clientId, protocolId, startDate) {
 
 // create client
 export function addClient(client) {
-  const user = [
-    client.passcode,
-    client.govId,
-    client.condition,
-    client.phone,
-    client.email,
-    client.name,
-    client.gender,
-  ];
+  const user = [client.passcode, client.govId, client.condition, client.phone, client.email, client.name, client.gender];
 
   return db
     .query(
@@ -67,32 +56,19 @@ export function addClient(client) {
 
 // fetch client
 export function getClient(data) {
-  return db
-    .query(
-      "SELECT id, gov_id, name, gender, email, phone, condition FROM clients WHERE id = $1",
-      [data]
-    )
-    .then((client) => {
-      return client.rows;
-    });
+  return db.query("SELECT id, gov_id, name, gender, email, phone, condition FROM clients WHERE id = $1", [data]).then((client) => {
+    return client.rows;
+  });
 }
 
 // fetch client by govID
 export function getClientByGovId(id) {
-  return db
-    .query(
-      "SELECT id, name, email, phone, time_passcode_expiry FROM clients WHERE gov_id = $1",
-      [id]
-    )
-    .then((client) => client.rows[0]);
+  return db.query("SELECT id, name, email, phone, time_passcode_expiry FROM clients WHERE gov_id = $1", [id]).then((client) => client.rows[0]);
 }
 
 // update client temporary passcode by client id
 export function setTempPasscode(id, hash, expiresIn) {
-  return db.query(
-    `UPDATE clients SET time_passcode=$2, time_passcode_expiry=$3 WHERE id = $1`,
-    [id, hash, expiresIn]
-  );
+  return db.query(`UPDATE clients SET time_passcode=$2, time_passcode_expiry=$3 WHERE id = $1`, [id, hash, expiresIn]);
 }
 
 export function fetchSurveysByClientAndTreatment(clientId, treatmentId) {
@@ -113,30 +89,20 @@ export function fetchSurveysByClientAndTreatment(clientId, treatmentId) {
 }
 
 export function getTreatment(id) {
-  return db
-    .query(
-      "SELECT id, protocol_id, start_date, status FROM treatment WHERE client_id = $1",
-      [id]
-    )
-    .then((treatment) => {
-      return treatment.rows[0];
-    });
+  return db.query("SELECT id, protocol_id, start_date, status FROM treatment WHERE client_id = $1", [id]).then((treatment) => {
+    return treatment.rows[0];
+  });
 }
 
 export function getProtocol(id) {
-  return db
-    .query("SELECT name FROM protocols WHERE id = $1", [id])
-    .then((protocol) => {
-      return protocol.rows[0];
-    });
+  return db.query("SELECT name FROM protocols WHERE id = $1", [id]).then((protocol) => {
+    return protocol.rows[0];
+  });
 }
 
 //get matrix by matrixID on specific language.
 export function fetchMatrix(id, lang = "en") {
-  if (lang === "en")
-    return db
-      .query("SELECT * FROM matrix WHERE id = $1", [id])
-      .then((matrix) => matrix.rows[0]);
+  if (lang === "en") return db.query("SELECT * FROM matrix WHERE id = $1", [id]).then((matrix) => matrix.rows[0]);
   else {
     return db
       .query(
@@ -167,4 +133,12 @@ export function fetchQuestions(surveyID, lang = "en") {
       )
       .then((questions) => questions.rows);
   }
+}
+
+export function updateClient(client, clientId) {
+  return db.query(`UPDATE clients SET condition = $1 phone = $2 email = $3 name = $4 gender = $5 WHERE id = $6`, [...client, clientId]);
+}
+
+export function updateReminder(reminder, clientId) {
+  return db.query(`UPDATE clients SET reminder = $1 WHERE client_id = $2`, [reminder, clientId]);
 }

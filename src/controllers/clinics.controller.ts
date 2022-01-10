@@ -9,6 +9,8 @@ import bcrypt from "bcryptjs";
 dotenv.config();
 
 import {
+  updateReminder,
+  updateClient,
   getClient,
   getTreatment,
   getProtocol,
@@ -40,10 +42,7 @@ const getClientData = catchAsync(async (req: any, res: any) => {
 
   const protocol = await getProtocol(treatment.protocol_id);
 
-  const surveys = await fetchSurveysByClientAndTreatment(
-    client.id,
-    treatment.id
-  );
+  const surveys = await fetchSurveysByClientAndTreatment(client.id, treatment.id);
 
   // normalize data
   client.govId = client.gov_id;
@@ -74,24 +73,14 @@ const getClientData = catchAsync(async (req: any, res: any) => {
 const getAllProtocols = catchAsync(async (req, res) => {
   const protocolList = await fetchProtocols();
 
-  if (!protocolList.length)
-    throw new ApiError(
-      httpStatus.INTERNAL_SERVER_ERROR,
-      "Unable to fetch protocols"
-    );
+  if (!protocolList.length) throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Unable to fetch protocols");
 
   for (let protocol of protocolList) {
     protocol.surveysAmount = protocol.surveys_amount;
     protocol.surveysTypes = protocol.surveys_types;
     protocol.date = protocol.created_at.toLocaleDateString("he-il");
 
-    deleteProps(protocol, [
-      "created_at",
-      "surveys_amount",
-      "surveys_types",
-      "protocol_id",
-      "clinic_id",
-    ]);
+    deleteProps(protocol, ["created_at", "surveys_amount", "surveys_types", "protocol_id", "clinic_id"]);
   }
 
   res.status(httpStatus.OK).send({ protocols: protocolList });
@@ -101,22 +90,13 @@ const getAllProtocols = catchAsync(async (req, res) => {
 const getAllSurveys = catchAsync(async (req, res) => {
   const surveysList = await fetchSurveys();
 
-  if (!surveysList.length)
-    throw new ApiError(
-      httpStatus.INTERNAL_SERVER_ERROR,
-      "Unable to fetch surveys"
-    );
+  if (!surveysList.length) throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Unable to fetch surveys");
 
   for (let survey of surveysList) {
     survey.questionsAmount = survey.questions_amount;
     survey.date = survey.created_at.toLocaleDateString("he-il");
 
-    deleteProps(survey, [
-      "created_at",
-      "questions_amount",
-      "survey_id",
-      "clinic_id",
-    ]);
+    deleteProps(survey, ["created_at", "questions_amount", "survey_id", "clinic_id"]);
   }
 
   res.status(httpStatus.OK).send({ surveys: surveysList });
@@ -127,14 +107,9 @@ const sendTempPasscode = catchAsync(async (req, res) => {
   const { govId, email } = req.body;
 
   const account = await getClientByGovId(govId);
-  if (typeof account === "undefined")
-    throw new ApiError(
-      httpStatus.NOT_FOUND,
-      "Government id number is not correct."
-    );
+  if (typeof account === "undefined") throw new ApiError(httpStatus.NOT_FOUND, "Government id number is not correct.");
 
-  if (email !== account.email)
-    throw new ApiError(httpStatus.NOT_FOUND, "Email is not matching!");
+  if (email !== account.email) throw new ApiError(httpStatus.NOT_FOUND, "Email is not matching!");
 
   account.expiresIn = account.time_passcode_expiry;
   delete account.time_passcode_expiry;
@@ -143,11 +118,7 @@ const sendTempPasscode = catchAsync(async (req, res) => {
   //expiresIn - 30 min + 2min
   const timeBeforeTwoMinutes = account.expiresIn.getTime() - balancedTime; //since the client got his latest passcode.
 
-  if (new Date() < new Date(timeBeforeTwoMinutes))
-    throw new ApiError(
-      httpStatus.TOO_MANY_REQUESTS,
-      "You have exceeded your requests per minute."
-    );
+  if (new Date() < new Date(timeBeforeTwoMinutes)) throw new ApiError(httpStatus.TOO_MANY_REQUESTS, "You have exceeded your requests per minute.");
 
   const passcode = passcodeGenerator.generate({ length: 10, numbers: true });
 
@@ -166,13 +137,7 @@ const sendTempPasscode = catchAsync(async (req, res) => {
   }
 
   //sensitive data from .env file.
-  const {
-    MAIL_USERNAME,
-    MAIL_PASSWORD,
-    OAUTH_CLIENTID,
-    OAUTH_CLIENT_SECRET,
-    OAUTH_REFRESH_TOKEN,
-  } = process.env;
+  const { MAIL_USERNAME, MAIL_PASSWORD, OAUTH_CLIENTID, OAUTH_CLIENT_SECRET, OAUTH_REFRESH_TOKEN } = process.env;
 
   //transport configuration object,
   let transporter = nodemailer.createTransport({
@@ -207,17 +172,17 @@ const sendTempPasscode = catchAsync(async (req, res) => {
   //Send a new email.
   transporter.sendMail(mailOptions, (err, data) => {
     if (err) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        `An error occured: ${err.message}`
-      );
+      throw new ApiError(httpStatus.BAD_REQUEST, `An error occured: ${err.message}`);
     } else {
       res.status(httpStatus.OK).send({ response: "Email sent successfully." });
     }
   });
 });
-
+function updateClientData(req: any, res: any) {
+  const client = req.body;
+}
 export default {
+  updateClientData: updateClientData,
   getProtocols: getAllProtocols,
   getSurveys: getAllSurveys,
   getClientData: getClientData,
