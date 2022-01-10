@@ -51,7 +51,7 @@ const updateMissedJob = () =>
 // A cron job that runs every 5 minutes to check which clients/patients have surveys today
 // and decide when to send them a reminder for it (currently only supports email)
 const remindersJob = () =>
-  cron.schedule("* */5 * * * *", async function () {
+  cron.schedule("*/5 * * * * *", async function () {
     try {
       const treatments = await db
         .query(`SELECT * FROM treatment WHERE status='on-going'`)
@@ -73,8 +73,8 @@ const remindersJob = () =>
         const surveyDate = moment(clientSurveys[0].survey_date).format("L");
 
         var sent = false;
-
         if (currDate === surveyDate) {
+          console.log("in");
           treatment.reminders.forEach(async (reminder) => {
             if (sent) {
               return;
@@ -90,7 +90,6 @@ const remindersJob = () =>
               second: 0,
               millisecond: 0,
             });
-
             if (
               !reminder.has_sent &&
               moment().tz("Asia/Jerusalem").isSameOrAfter(reminderTime)
@@ -122,17 +121,15 @@ const remindersJob = () =>
 
               // formatting all client surveys to <li></li> elements
               const surveyList = await Promise.all(
-                clientSurveys.reduce(async (acc, survey) => {
+                clientSurveys.map(async (survey) => {
                   const surveyData = await db
                     .query(`SELECT * FROM surveys WHERE id=$1`, [
                       survey.survey_id,
                     ])
                     .then(({ rows }) => rows[0]);
-
-                  return acc + `<li>${surveyData.name}</li>`;
-                }, "")
+                  return `<li>${surveyData.name}</li>`;
+                })
               );
-
               // calculating time left
               const midnight = moment().set({
                 hour: 23,
@@ -144,7 +141,15 @@ const remindersJob = () =>
               const now = moment();
               const timeDifference = midnight.diff(now);
               const tempTime = moment.duration(timeDifference);
-              const remainingTime = tempTime.hours() + ":" + tempTime.minutes();
+              const hour =
+                tempTime.hours() <= 9 && tempTime.hours() >= 0
+                  ? "0" + tempTime.hours()
+                  : tempTime.hours();
+              const minute =
+                tempTime.minutes() <= 9 && tempTime.minutes() >= 0
+                  ? "0" + tempTime.minutes()
+                  : tempTime.minutes();
+              const remainingTime = hour + ":" + minute;
 
               const mailOptions = {
                 from: `${MAIL_USERNAME}@gmail.com`,
@@ -159,7 +164,13 @@ const remindersJob = () =>
                   </div>
                   <div>
                     <ul>
-                    ${surveyList}
+                    ${(function showList() {
+                      let output = "";
+                      for (let i = 0; i < surveyList.length; i++) {
+                        output += surveyList[i];
+                      }
+                      return output;
+                    })()}
                     </ul>
                   </div>
                   <span style="font-size: 20px; margin-top: 10px">Time remaining: ${remainingTime} hours</span>

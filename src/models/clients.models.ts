@@ -148,8 +148,6 @@ export function getProtocol(id) {
     .then((protocol) => {
       return protocol.rows[0];
     });
-<<<<<<< HEAD
-=======
 }
 
 //get matrix by matrixID on specific language.
@@ -188,5 +186,4 @@ export function fetchQuestions(surveyID, lang = "en") {
       )
       .then((questions) => questions.rows);
   }
->>>>>>> 63e784feb25a217617a3c3425e0022df3385973d
 }
