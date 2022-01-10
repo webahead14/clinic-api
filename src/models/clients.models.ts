@@ -119,9 +119,10 @@ export function fetchSurveysByClientAndTreatment(clientId, treatmentId) {
   // so when can show the date of each survey for the client -> clients_surveys.survey_date
   return db
     .query(
-      `SELECT clients_surveys.is_done, clients_surveys.is_partially_done, clients_surveys.has_missed, surveys.name
+      `SELECT clients_surveys.is_done, clients_surveys.is_partially_done, clients_surveys.has_missed, surveys.name, protocols_surveys.week
       FROM clients_surveys 
       LEFT JOIN surveys ON surveys.id = clients_surveys.survey_id
+      LEFT JOIN protocols_surveys ON protocols_surveys.id = clients_surveys.survey_id
       WHERE clients_surveys.client_id = $1 AND clients_surveys.treatment_id = $2`,
       [clientId, treatmentId]
     )
@@ -147,6 +148,8 @@ export function getProtocol(id) {
     .then((protocol) => {
       return protocol.rows[0];
     });
+<<<<<<< HEAD
+=======
 }
 
 //get matrix by matrixID on specific language.
@@ -185,4 +188,5 @@ export function fetchQuestions(surveyID, lang = "en") {
       )
       .then((questions) => questions.rows);
   }
+>>>>>>> 63e784feb25a217617a3c3425e0022df3385973d
 }

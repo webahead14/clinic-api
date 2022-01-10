@@ -54,6 +54,7 @@ const getClientData = catchAsync(async (req: any, res: any) => {
     isPartiallyDone: survey.is_partially_done,
     hasMissed: survey.has_missed,
     name: survey.name,
+    week: survey.week,
   }));
 
   // delete unwanted data
