@@ -77,6 +77,24 @@ export function getClient(data) {
     });
 }
 
+// fetch client by govID
+export function getClientByGovId(id) {
+  return db
+    .query(
+      "SELECT id, name, email, phone, time_passcode_expiry FROM clients WHERE gov_id = $1",
+      [id]
+    )
+    .then((client) => client.rows[0]);
+}
+
+// update client temporary passcode by client id
+export function setTempPasscode(id, hash, expiresIn) {
+  return db.query(
+    `UPDATE clients SET time_passcode=$2, time_passcode_expiry=$3 WHERE id = $1`,
+    [id, hash, expiresIn]
+  );
+}
+
 export function fetchSurveysByClientAndTreatment(clientId, treatmentId) {
   // To add to this query
   // once the survey_date is added to the clients_surveys table then we will need to add it to this query
@@ -112,4 +130,45 @@ export function getProtocol(id) {
     .then((protocol) => {
       return protocol.rows[0];
     });
+<<<<<<< HEAD
+=======
+}
+
+//get matrix by matrixID on specific language.
+export function fetchMatrix(id, lang = "en") {
+  if (lang === "en")
+    return db
+      .query("SELECT * FROM matrix WHERE id = $1", [id])
+      .then((matrix) => matrix.rows[0]);
+  else {
+    return db
+      .query(
+        `SELECT * FROM matrix LEFT JOIN matrix_languages 
+            ON matrix.id = matrix_languages.matrix_id WHERE matrix.id = $1 AND matrix_languages.language = $2`,
+        [id, lang]
+      )
+      .then((matrix) => matrix.rows[0]);
+  }
+}
+
+//get questions by surveyID on specific language
+export function fetchQuestions(surveyID, lang = "en") {
+  if (lang === "en")
+    return db
+      .query(
+        `SELECT * FROM questions_surveys LEFT JOIN questions ON questions_surveys.question_id = 
+      questions.id WHERE survey_id = $1`,
+        [surveyID]
+      )
+      .then((questions) => questions.rows);
+  else {
+    return db
+      .query(
+        `SELECT * FROM questions_surveys LEFT JOIN questions_language ON questions_surveys.question_id = 
+        questions_language.question_id WHERE survey_id = $1 AND questions_language.language = $2`,
+        [surveyID, lang]
+      )
+      .then((questions) => questions.rows);
+  }
+>>>>>>> 63e784feb25a217617a3c3425e0022df3385973d
 }
