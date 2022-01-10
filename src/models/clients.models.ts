@@ -1,5 +1,6 @@
 import db from "../database/connection";
 import fetchSurveyData from "../services/survey.service";
+import moment from "moment";
 
 export function fetchClients() {
   return db.query("SELECT * FROM clients").then((clients) => {
@@ -16,25 +17,42 @@ export function fetchSurveysByProtocolId(protocolId) {
     .then((surveys) => surveys.rows);
 }
 
-export function attachSurveysToClient(protocolId, clientId, treatmentId) {
+export function attachSurveysToClient(
+  protocolId,
+  clientId,
+  treatmentId,
+  startDate
+) {
   return fetchSurveysByProtocolId(protocolId).then((surveys) => {
     surveys.forEach(async (survey) => {
       let formattedSurvey = await fetchSurveyData(survey.survey_id);
+      let surveyDate = moment(startDate).add({ weeks: +survey.week });
       return db.query(
-        `INSERT INTO clients_surveys (client_id,survey_id,treatment_id,survey_snapshot)
-                VALUES ($1,$2,$3,$4)`,
-        [clientId, survey.id, treatmentId, JSON.stringify(formattedSurvey)]
+        `INSERT INTO clients_surveys (client_id,survey_id,treatment_id,survey_snapshot,survey_date)
+                VALUES ($1,$2,$3,$4,$5)`,
+        [
+          clientId,
+          survey.id,
+          treatmentId,
+          JSON.stringify(formattedSurvey),
+          surveyDate,
+        ]
       );
     });
   });
 }
 
-export function createTreatment(clientId, protocolId, startDate) {
-  const treatment = [clientId, protocolId, startDate];
+export function createTreatment(clientId, protocolId, startDate, reminders) {
+  const treatment = [
+    clientId,
+    protocolId,
+    startDate,
+    JSON.stringify(reminders),
+  ];
   return db
     .query(
-      `INSERT INTO treatment (client_id,protocol_id,start_date) 
-    VALUES ($1,$2,$3) RETURNING id`,
+      `INSERT INTO treatment (client_id,protocol_id,start_date,reminders) 
+    VALUES ($1,$2,$3,$4) RETURNING id`,
       treatment
     )
     .then(({ rows }) => rows[0].id);
@@ -44,6 +62,7 @@ export function createTreatment(clientId, protocolId, startDate) {
 export function addClient(client) {
   const user = [
     client.passcode,
+    client.temPasscode,
     client.govId,
     client.condition,
     client.phone,
@@ -55,8 +74,8 @@ export function addClient(client) {
   return db
     .query(
       `INSERT INTO clients 
-      (passcode,gov_id,condition,phone,email,name,gender) 
-      VALUES ($1,$2,$3,$4,$5,$6,$7)
+      (passcode,time_passcode,gov_id,condition,phone,email,name,gender) 
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
       RETURNING id`,
       user
     )
@@ -80,10 +99,7 @@ export function getClient(data) {
 // fetch client by govID
 export function getClientByGovId(id) {
   return db
-    .query(
-      "SELECT id, name, email, phone, time_passcode_expiry FROM clients WHERE gov_id = $1",
-      [id]
-    )
+    .query("SELECT * FROM clients WHERE gov_id = $1", [id])
     .then((client) => client.rows[0]);
 }
 
@@ -130,45 +146,4 @@ export function getProtocol(id) {
     .then((protocol) => {
       return protocol.rows[0];
     });
-<<<<<<< HEAD
-=======
-}
-
-//get matrix by matrixID on specific language.
-export function fetchMatrix(id, lang = "en") {
-  if (lang === "en")
-    return db
-      .query("SELECT * FROM matrix WHERE id = $1", [id])
-      .then((matrix) => matrix.rows[0]);
-  else {
-    return db
-      .query(
-        `SELECT * FROM matrix LEFT JOIN matrix_languages 
-            ON matrix.id = matrix_languages.matrix_id WHERE matrix.id = $1 AND matrix_languages.language = $2`,
-        [id, lang]
-      )
-      .then((matrix) => matrix.rows[0]);
-  }
-}
-
-//get questions by surveyID on specific language
-export function fetchQuestions(surveyID, lang = "en") {
-  if (lang === "en")
-    return db
-      .query(
-        `SELECT * FROM questions_surveys LEFT JOIN questions ON questions_surveys.question_id = 
-      questions.id WHERE survey_id = $1`,
-        [surveyID]
-      )
-      .then((questions) => questions.rows);
-  else {
-    return db
-      .query(
-        `SELECT * FROM questions_surveys LEFT JOIN questions_language ON questions_surveys.question_id = 
-        questions_language.question_id WHERE survey_id = $1 AND questions_language.language = $2`,
-        [surveyID, lang]
-      )
-      .then((questions) => questions.rows);
-  }
->>>>>>> 63e784feb25a217617a3c3425e0022df3385973d
 }
