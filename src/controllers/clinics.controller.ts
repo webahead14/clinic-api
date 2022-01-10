@@ -1,4 +1,4 @@
-import { catchAsync, ApiError, deleteProps } from "../utils";
+import { catchAsync, ApiError, deleteProps, sendMail } from "../utils";
 import { fetchProtocols, fetchSurveys } from "../models/clinics.model";
 import httpStatus from "http-status";
 import nodemailer from "nodemailer";
@@ -168,33 +168,9 @@ const sendTempPasscode = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `${error}`);
   }
 
-  //sensitive data from .env file.
-  const {
-    MAIL_USERNAME,
-    MAIL_PASSWORD,
-    OAUTH_CLIENTID,
-    OAUTH_CLIENT_SECRET,
-    OAUTH_REFRESH_TOKEN,
-  } = process.env;
-
-  //transport configuration object,
-  let transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-      type: "OAuth2",
-      user: MAIL_USERNAME,
-      pass: MAIL_PASSWORD,
-      clientId: OAUTH_CLIENTID,
-      clientSecret: OAUTH_CLIENT_SECRET,
-      refreshToken: OAUTH_REFRESH_TOKEN,
-    },
-  });
-
-  //what data to send and to whom.
+  //the mail content and address.
   let mailOptions = {
-    from: `${MAIL_USERNAME}@gmail.com`,
+    from: `${process.env.MAIL_USERNAME}@gmail.com`,
     to: `${email}`,
     subject: "GrayMatters Healthtemporary passcode",
     html: `<div style="font-size: 22px;">Hi, ${account.name}</span>, <div style="font-size: 20px; margin-top: 10px;">We received a request for a temporary passcode. Please use the passcode below in order to sign in.</div></div>
@@ -208,17 +184,8 @@ const sendTempPasscode = catchAsync(async (req, res) => {
       box-shadow: 5px 5px 8px CornflowerBlue; border-radius: 8px;">${passcode}</div>`,
   };
 
-  //Send a new email.
-  transporter.sendMail(mailOptions, (err, data) => {
-    if (err) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        `An error occured: ${err.message}`
-      );
-    } else {
-      res.status(httpStatus.OK).send({ response: "Email sent successfully." });
-    }
-  });
+  sendMail(mailOptions);
+  res.status(httpStatus.OK).send({ response: "Email sent successfully." });
 });
 
 export default {
@@ -227,4 +194,3 @@ export default {
   getClientData: getClientData,
   sendPasscode: sendTempPasscode,
 };
-

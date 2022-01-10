@@ -97,7 +97,6 @@ const loginClient = catchAsync(async (req: any, res: any) => {
   const dbTempPasscode = client.time_passcode;
   const expiresIn = client.time_passcode_expiry;
 
-  // try/catch the compareSync in the if statement
   try {
     const isPasscode = bcrypt.compareSync(passcode, dbPasscode);
     const compareTempPasscode = bcrypt.compareSync(passcode, dbTempPasscode);
@@ -107,7 +106,13 @@ const loginClient = catchAsync(async (req: any, res: any) => {
     }
 
     if (!isPasscode && !isTempPasscode) {
-      throw new ApiError(httpStatus.UNAUTHORIZED, "Password is incorrect ");
+      if (compareTempPasscode) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "Passcode access time is expired."
+        );
+      }
+      throw new ApiError(httpStatus.UNAUTHORIZED, "Passcode is incorrect.");
     } else {
       const token = jwt.sign({ name: client.name, id: client.id }, SECRET, {
         expiresIn: 60 * 60 * 24,
