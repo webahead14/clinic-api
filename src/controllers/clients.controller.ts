@@ -90,7 +90,7 @@ const loginClient = catchAsync(async (req: any, res: any) => {
 
   const client = await getClientByGovId(govId);
   if (!client) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Identity number is incorrect");
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Identity number is incorrect");
   }
 
   const dbPasscode = client.passcode;
@@ -98,31 +98,31 @@ const loginClient = catchAsync(async (req: any, res: any) => {
   const expiresIn = client.time_passcode_expiry;
 
   // try/catch the compareSync in the if statement
-  const isPasscode = bcrypt.compareSync(passcode, dbPasscode);
-  const compareTempPasscode = bcrypt.compareSync(passcode, dbTempPasscode);
-  console.log(compareTempPasscode);
-  console.log(passcode);
-  console.log(dbTempPasscode);
+  try {
+    const isPasscode = bcrypt.compareSync(passcode, dbPasscode);
+    const compareTempPasscode = bcrypt.compareSync(passcode, dbTempPasscode);
+    let isTempPasscode = false;
+    if (new Date() < expiresIn && compareTempPasscode) {
+      isTempPasscode = true;
+    }
 
-  let isTempPasscode = false;
-  if (new Date() < expiresIn && compareTempPasscode) {
-    isTempPasscode = true;
-  }
+    if (!isPasscode && !isTempPasscode) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, "Password is incorrect ");
+    } else {
+      const token = jwt.sign({ name: client.name, id: client.id }, SECRET, {
+        expiresIn: 60 * 60 * 24,
+      });
 
-  if (!isPasscode && !isTempPasscode) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Password is incorrect ");
-  } else {
-    const token = jwt.sign({ name: client.name, id: client.id }, SECRET, {
-      expiresIn: 60 * 60 * 24,
-    });
-
-    const response = {
-      name: client.name,
-      govId: govId,
-      access_token: token,
-      status: "success",
-    };
-    res.status(httpStatus.OK).send(response);
+      const response = {
+        name: client.name,
+        govId: govId,
+        access_token: token,
+        status: "success",
+      };
+      res.status(httpStatus.OK).send(response);
+    }
+  } catch (err) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, `${err}`);
   }
 });
 
