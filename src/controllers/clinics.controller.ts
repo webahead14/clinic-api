@@ -1,13 +1,13 @@
-import { catchAsync, ApiError, deleteProps } from '../utils';
-import { fetchProtocols, fetchSurveys } from '../models/clinics.model';
-import httpStatus from 'http-status';
+import { catchAsync, ApiError, deleteProps } from "../utils";
+import { fetchProtocols, fetchSurveys } from "../models/clinics.model";
+import httpStatus from "http-status";
 
 import {
   getClient,
   getTreatment,
   getProtocol,
   fetchSurveysByClientAndTreatment,
-} from '../models/clients.models';
+} from "../models/clients.models";
 
 // Get a specific client's data
 const getClientData = catchAsync(async (req: any, res: any) => {
@@ -16,7 +16,7 @@ const getClientData = catchAsync(async (req: any, res: any) => {
   const client = (await getClient(id))[0];
 
   if (!client) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'No client found');
+    throw new ApiError(httpStatus.BAD_REQUEST, "No client found");
   }
 
   const treatment = await getTreatment(client.id);
@@ -24,7 +24,7 @@ const getClientData = catchAsync(async (req: any, res: any) => {
   if (!treatment) {
     const response = {
       client: client,
-      status: 'success',
+      status: "success",
     };
 
     return res.status(httpStatus.OK).send(response);
@@ -46,6 +46,7 @@ const getClientData = catchAsync(async (req: any, res: any) => {
     isPartiallyDone: survey.is_partially_done,
     hasMissed: survey.has_missed,
     name: survey.name,
+    week: survey.week,
   }));
 
   // delete unwanted data
@@ -58,7 +59,7 @@ const getClientData = catchAsync(async (req: any, res: any) => {
     surveyProgress: normalizedSurveys,
     protocol: protocol,
     treatment,
-    status: 'success',
+    status: "success",
   };
   res.status(httpStatus.OK).send(response);
 });
@@ -70,20 +71,20 @@ const getAllProtocols = catchAsync(async (req, res) => {
   if (!protocolList.length)
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      'Unable to fetch protocols'
+      "Unable to fetch protocols"
     );
 
   for (let protocol of protocolList) {
     protocol.surveysAmount = protocol.surveys_amount;
     protocol.surveysTypes = protocol.surveys_types;
-    protocol.date = protocol.created_at.toLocaleDateString('he-il');
+    protocol.date = protocol.created_at.toLocaleDateString("he-il");
 
     deleteProps(protocol, [
-      'created_at',
-      'surveys_amount',
-      'surveys_types',
-      'protocol_id',
-      'clinic_id',
+      "created_at",
+      "surveys_amount",
+      "surveys_types",
+      "protocol_id",
+      "clinic_id",
     ]);
   }
 
@@ -97,18 +98,18 @@ const getAllSurveys = catchAsync(async (req, res) => {
   if (!surveysList.length)
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      'Unable to fetch surveys'
+      "Unable to fetch surveys"
     );
 
   for (let survey of surveysList) {
     survey.questionsAmount = survey.questions_amount;
-    survey.date = survey.created_at.toLocaleDateString('he-il');
+    survey.date = survey.created_at.toLocaleDateString("he-il");
 
     deleteProps(survey, [
-      'created_at',
-      'questions_amount',
-      'survey_id',
-      'clinic_id',
+      "created_at",
+      "questions_amount",
+      "survey_id",
+      "clinic_id",
     ]);
   }
 
