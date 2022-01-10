@@ -32,6 +32,7 @@ const createClient = catchAsync(async (req: any, res: any) => {
     gender,
     protocolId,
     startDate,
+    reminders,
   } = req.body;
 
   if (
@@ -43,7 +44,8 @@ const createClient = catchAsync(async (req: any, res: any) => {
     !name ||
     !gender ||
     !protocolId ||
-    !startDate
+    !startDate ||
+    !reminders
   ) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Missing data");
   }
@@ -69,8 +71,13 @@ const createClient = catchAsync(async (req: any, res: any) => {
   };
   client.passcode = hash;
   const clientId = await addClient(client);
-  const treatmentId = await createTreatment(clientId, protocolId, startDate);
-  await attachSurveysToClient(protocolId, clientId, treatmentId);
+  const treatmentId = await createTreatment(
+    clientId,
+    protocolId,
+    startDate,
+    reminders
+  );
+  await attachSurveysToClient(protocolId, clientId, treatmentId, startDate);
   res.status(httpStatus.OK).send({ success: true });
 });
 //edit client
