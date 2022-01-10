@@ -224,3 +224,4 @@ export default {
   getClientData: getClientData,
   sendPasscode: sendTempPasscode,
 };
+
