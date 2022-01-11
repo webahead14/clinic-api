@@ -223,9 +223,17 @@ const sendTempPasscode = catchAsync(async (req, res) => {
 //Updates the clients data
 // req.body == {id:client_id, client:{condition,phone,email,name,gender},reminder:JSON}
 const updateClientData = catchAsync(async (req: any, res: any) => {
-  const client = Object.values(req.body.client);
   try {
-    await updateClient(client, req.body.id);
+    await updateClient(
+      [
+        req.body.condition,
+        req.body.phone,
+        req.body.email,
+        req.body.name,
+        req.body.gender,
+      ],
+      req.body.id
+    );
     await updateReminder(req.body.reminder, req.body.id);
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `${error}`);
