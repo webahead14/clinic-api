@@ -1,5 +1,6 @@
 import db from "../database/connection";
 import fetchSurveyData from "../services/survey.service";
+import moment from "moment";
 
 export function fetchClients() {
   return db.query("SELECT * FROM clients").then((clients) => {
@@ -13,25 +14,42 @@ export function fetchSurveysByProtocolId(protocolId) {
     .then((surveys) => surveys.rows);
 }
 
-export function attachSurveysToClient(protocolId, clientId, treatmentId) {
+export function attachSurveysToClient(
+  protocolId,
+  clientId,
+  treatmentId,
+  startDate
+) {
   return fetchSurveysByProtocolId(protocolId).then((surveys) => {
     surveys.forEach(async (survey) => {
       let formattedSurvey = await fetchSurveyData(survey.survey_id);
+      let surveyDate = moment(startDate).add({ weeks: +survey.week });
       return db.query(
-        `INSERT INTO clients_surveys (client_id,survey_id,treatment_id,survey_snapshot)
-                VALUES ($1,$2,$3,$4)`,
-        [clientId, survey.id, treatmentId, JSON.stringify(formattedSurvey)]
+        `INSERT INTO clients_surveys (client_id,survey_id,treatment_id,survey_snapshot,survey_date)
+                VALUES ($1,$2,$3,$4,$5)`,
+        [
+          clientId,
+          survey.id,
+          treatmentId,
+          JSON.stringify(formattedSurvey),
+          surveyDate,
+        ]
       );
     });
   });
 }
 
-export function createTreatment(clientId, protocolId, startDate) {
-  const treatment = [clientId, protocolId, startDate];
+export function createTreatment(clientId, protocolId, startDate, reminders) {
+  const treatment = [
+    clientId,
+    protocolId,
+    startDate,
+    JSON.stringify(reminders),
+  ];
   return db
     .query(
-      `INSERT INTO treatment (client_id,protocol_id,start_date) 
-    VALUES ($1,$2,$3) RETURNING id`,
+      `INSERT INTO treatment (client_id,protocol_id,start_date,reminders) 
+    VALUES ($1,$2,$3,$4) RETURNING id`,
       treatment
     )
     .then(({ rows }) => rows[0].id);
@@ -77,9 +95,10 @@ export function fetchSurveysByClientAndTreatment(clientId, treatmentId) {
   // so when can show the date of each survey for the client -> clients_surveys.survey_date
   return db
     .query(
-      `SELECT clients_surveys.is_done, clients_surveys.is_partially_done, clients_surveys.has_missed, surveys.name
+      `SELECT clients_surveys.is_done, clients_surveys.is_partially_done, clients_surveys.has_missed, surveys.name, protocols_surveys.week
       FROM clients_surveys 
       LEFT JOIN surveys ON surveys.id = clients_surveys.survey_id
+      LEFT JOIN protocols_surveys ON protocols_surveys.id = clients_surveys.survey_id
       WHERE clients_surveys.client_id = $1 AND clients_surveys.treatment_id = $2`,
       [clientId, treatmentId]
     )
