@@ -34,6 +34,8 @@ const createClient = catchAsync(async (req: any, res: any) => {
     startDate,
   } = req.body;
 
+  // const protocolId = (await getClient(protocolName))[0];
+
   if (
     !passcode ||
     !govId ||
@@ -61,6 +63,7 @@ const createClient = catchAsync(async (req: any, res: any) => {
     email,
     name,
     gender,
+    protocolId,
   };
   const clientId = await addClient(client);
   const treatmentId = await createTreatment(clientId, protocolId, startDate);

@@ -1,10 +1,10 @@
-import db from "../database/connection"
-import fetchSurveyData from "../services/survey.service"
+import db from "../database/connection";
+import fetchSurveyData from "../services/survey.service";
 
 export function fetchClients() {
   return db.query("SELECT * FROM clients").then((clients) => {
-    return clients.rows
-  })
+    return clients.rows;
+  });
 }
 
 export function fetchSurveysByProtocolId(protocolId) {
@@ -13,31 +13,31 @@ export function fetchSurveysByProtocolId(protocolId) {
       "SELECT * FROM protocols_surveys ps INNER JOIN surveys ON surveys.id = ps.survey_id WHERE ps.protocol_id = $1",
       [protocolId]
     )
-    .then((surveys) => surveys.rows)
+    .then((surveys) => surveys.rows);
 }
 
 export function attachSurveysToClient(protocolId, clientId, treatmentId) {
   return fetchSurveysByProtocolId(protocolId).then((surveys) => {
     surveys.forEach(async (survey) => {
-      let formattedSurvey = await fetchSurveyData(survey.survey_id)
+      let formattedSurvey = await fetchSurveyData(survey.survey_id);
       return db.query(
         `INSERT INTO clients_surveys (client_id,survey_id,treatment_id,survey_snapshot)
                 VALUES ($1,$2,$3,$4)`,
         [clientId, survey.id, treatmentId, JSON.stringify(formattedSurvey)]
-      )
-    })
-  })
+      );
+    });
+  });
 }
 
 export function createTreatment(clientId, protocolId, startDate) {
-  const treatment = [clientId, protocolId, startDate]
+  const treatment = [clientId, protocolId, startDate];
   return db
     .query(
       `INSERT INTO treatment (client_id,protocol_id,start_date) 
     VALUES ($1,$2,$3) RETURNING id`,
       treatment
     )
-    .then(({ rows }) => rows[0].id)
+    .then(({ rows }) => rows[0].id);
 }
 
 // create client
@@ -50,7 +50,7 @@ export function addClient(client) {
     client.email,
     client.name,
     client.gender,
-  ]
+  ];
 
   return db
     .query(
@@ -61,8 +61,8 @@ export function addClient(client) {
       user
     )
     .then(({ rows }) => {
-      return rows[0].id
-    })
+      return rows[0].id;
+    });
 }
 
 // fetch client
@@ -73,8 +73,8 @@ export function getClient(data) {
       [data]
     )
     .then((client) => {
-      return client.rows
-    })
+      return client.rows;
+    });
 }
 
 export function fetchSurveysByClientAndTreatment(clientId, treatmentId) {
@@ -90,8 +90,8 @@ export function fetchSurveysByClientAndTreatment(clientId, treatmentId) {
       [clientId, treatmentId]
     )
     .then((surveys) => {
-      return surveys.rows
-    })
+      return surveys.rows;
+    });
 }
 
 export function getTreatment(id) {
@@ -101,14 +101,22 @@ export function getTreatment(id) {
       [id]
     )
     .then((treatment) => {
-      return treatment.rows[0]
-    })
+      return treatment.rows[0];
+    });
 }
 
 export function getProtocol(id) {
   return db
     .query("SELECT name FROM protocols WHERE id = $1", [id])
     .then((protocol) => {
-      return protocol.rows[0]
-    })
+      return protocol.rows[0];
+    });
 }
+
+// export function getProtocolIdFromName(name) {
+//   return db
+//     .query("SELECT id FROM protocols FROM name = $1", [name])
+//     .then((id) => {
+//       return id.rows;
+//     });
+// }
