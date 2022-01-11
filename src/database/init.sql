@@ -68,13 +68,12 @@ CREATE TABLE questions_language (
     language varchar(2)
 );
 
-
 CREATE TABLE clients (
     id SERIAL PRIMARY KEY,
     passcode text,
     time_passcode text,
     time_passcode_expiry timestamp default '12/12/2012 12:12:12',
-    gov_id INTEGER UNIQUE not null,
+    gov_id varchar(12) UNIQUE not null,
     condition varchar(50),
     deleted boolean,
     phone varchar(13) UNIQUE,
@@ -199,7 +198,6 @@ INSERT INTO protocols(clinic_id,name,condition) VALUES
     (1,'THC','Hala'
 );
 
-
 INSERT INTO protocols_surveys(survey_id,protocol_id,week) VALUES
     (1,1,1),
     (1,2,2),
@@ -211,10 +209,9 @@ INSERT INTO protocols_surveys(survey_id,protocol_id,week) VALUES
     (1,4,6
 );
 
--- INSERT INTO clients (passcode,time_passcode,gov_id,condition,deleted,phone,email,name,gender)
--- VALUES
--- ('$2a$10$xl6RQwCyucfYs85hF/JdBuoHctXf5trwl8E3S8.EL0fSQt7p7yYU.','M4R70','212771406','PTSD',false,'0525080784','durd2001@gmail.com','George Joubran', 'male');
-
+INSERT INTO clients (passcode,time_passcode,gov_id,condition,deleted,phone,email,name,gender)
+VALUES
+('$2a$10$xl6RQwCyucfYs85hF/JdBuoHctXf5trwl8E3S8.EL0fSQt7p7yYU.','M4R70','212771406','PTSD',false,'0525080784','durd2001@gmail.com','George Joubran', 'male');
 
 -- Inserting into treatment, not needed for now, could use for later.
 -- INSERT INTO treatment (client_id,protocol_id,start_date,status) VALUES
