@@ -1,9 +1,9 @@
 import {
   fetchClients,
-  getClient,
   addClient,
   createTreatment,
   attachSurveysToClient,
+  getClientByGovId,
 } from "../models/clients.models";
 import ApiError from "../utils/ApiError";
 import httpStatus from "http-status";
@@ -32,6 +32,7 @@ const createClient = catchAsync(async (req: any, res: any) => {
     gender,
     protocolId,
     startDate,
+    reminders,
   } = req.body;
 
   // const protocolId = (await getClient(protocolName))[0];
@@ -45,18 +46,24 @@ const createClient = catchAsync(async (req: any, res: any) => {
     !name ||
     !gender ||
     !protocolId ||
-    !startDate
+    !startDate ||
+    !reminders
   ) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Missing data");
   }
 
-  const checkExists = (await getClient(govId))[0];
+  const checkExists = await getClientByGovId(govId);
 
   if (checkExists)
     throw new ApiError(httpStatus.BAD_REQUEST, "client already exists");
 
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(passcode, salt);
+  const temPasscode = hash; //initialize in sql query just as dummy data.
+
   const client = {
     passcode,
+    temPasscode,
     govId,
     condition,
     phone,
@@ -65,29 +72,50 @@ const createClient = catchAsync(async (req: any, res: any) => {
     gender,
     protocolId,
   };
+  client.passcode = hash;
   const clientId = await addClient(client);
-  const treatmentId = await createTreatment(clientId, protocolId, startDate);
-  await attachSurveysToClient(protocolId, clientId, treatmentId);
+  const treatmentId = await createTreatment(
+    clientId,
+    protocolId,
+    startDate,
+    reminders
+  );
+  await attachSurveysToClient(protocolId, clientId, treatmentId, startDate);
   res.status(httpStatus.OK).send({ success: true });
 });
 //edit client
 //login client
 const loginClient = catchAsync(async (req: any, res: any) => {
-  const { gov_id, passcode } = req.body;
-  if (!gov_id || !passcode) {
+  const { govId, passcode } = req.body;
+  if (!govId || !passcode) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Missing data");
   }
 
-  const client = await getClient(gov_id);
+  const client = await getClientByGovId(govId);
   if (!client) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "No client found");
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Identity number is incorrect");
   }
 
-  const dbPassword = client.passcode;
+  const dbPasscode = client.passcode;
+  const dbTempPasscode = client.time_passcode;
+  const expiresIn = client.time_passcode_expiry;
 
-  bcrypt.compare(passcode, dbPassword).then((match) => {
-    if (!match) {
-      return res.send({ status: "wrong password" });
+  try {
+    const isPasscode = bcrypt.compareSync(passcode, dbPasscode);
+    const compareTempPasscode = bcrypt.compareSync(passcode, dbTempPasscode);
+    let isTempPasscode = false;
+    if (new Date() < expiresIn && compareTempPasscode) {
+      isTempPasscode = true;
+    }
+
+    if (!isPasscode && !isTempPasscode) {
+      if (compareTempPasscode) {
+        throw new ApiError(
+          httpStatus.UNAUTHORIZED,
+          "Passcode access time is expired."
+        );
+      }
+      throw new ApiError(httpStatus.UNAUTHORIZED, "Passcode is incorrect.");
     } else {
       const token = jwt.sign({ name: client.name, id: client.id }, SECRET, {
         expiresIn: 60 * 60 * 24,
@@ -95,13 +123,15 @@ const loginClient = catchAsync(async (req: any, res: any) => {
 
       const response = {
         name: client.name,
-        gov_id: client.gov_id,
+        govId: govId,
         access_token: token,
         status: "success",
       };
       res.status(httpStatus.OK).send(response);
     }
-  });
+  } catch (err) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, `${err}`);
+  }
 });
 
 export default {

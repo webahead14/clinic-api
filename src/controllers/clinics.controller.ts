@@ -1,12 +1,20 @@
-import { catchAsync, ApiError, deleteProps } from "../utils";
+import { catchAsync, ApiError, deleteProps, sendMail } from "../utils";
 import { fetchProtocols, fetchSurveys } from "../models/clinics.model";
 import httpStatus from "http-status";
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+import passcodeGenerator from "generate-password";
+import bcrypt from "bcryptjs";
+
+dotenv.config();
 
 import {
   getClient,
   getTreatment,
   getProtocol,
   fetchSurveysByClientAndTreatment,
+  getClientByGovId,
+  setTempPasscode,
 } from "../models/clients.models";
 
 // Get a specific client's data
@@ -44,12 +52,12 @@ const getClientData = catchAsync(async (req: any, res: any) => {
     isPartiallyDone: survey.is_partially_done,
     hasMissed: survey.has_missed,
     name: survey.name,
+    week: survey.week,
   }));
 
   // delete unwanted data
-  delete treatment.protocol_id;
-  delete treatment.start_date;
-  delete client.gov_id;
+  deleteProps(treatment, ["protocol_id", "start_date"]);
+  deleteProps(client, ["gov_id"]);
 
   const response = {
     ...client,
@@ -58,7 +66,7 @@ const getClientData = catchAsync(async (req: any, res: any) => {
     treatment,
     status: "success",
   };
-  return res.status(httpStatus.OK).send(response);
+  res.status(httpStatus.OK).send(response);
 });
 
 // Get the list of all protocols
@@ -102,8 +110,6 @@ const getAllSurveys = catchAsync(async (req, res) => {
   for (let survey of surveysList) {
     survey.questionsAmount = survey.questions_amount;
     survey.date = survey.created_at.toLocaleDateString("he-il");
-    delete survey.created_at;
-    survey.id = survey.id;
 
     deleteProps(survey, [
       "created_at",
@@ -116,8 +122,74 @@ const getAllSurveys = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ surveys: surveysList });
 });
 
+//Get temporary password by mail/sms
+const sendTempPasscode = catchAsync(async (req, res) => {
+  const { govId, email } = req.body;
+
+  const account = await getClientByGovId(govId);
+  if (typeof account === "undefined")
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      "Government id number is not correct."
+    );
+
+  if (email !== account.email)
+    throw new ApiError(httpStatus.NOT_FOUND, "Email is not matching!");
+
+  account.expiresIn = account.time_passcode_expiry;
+  delete account.time_passcode_expiry;
+
+  const balancedTime = 1680000; // 28 minutes in miliseconds
+  //expiresIn - 30 min + 2min
+  const timeBeforeTwoMinutes = account.expiresIn.getTime() - balancedTime; //since the client got his latest passcode.
+
+  if (new Date() < new Date(timeBeforeTwoMinutes))
+    throw new ApiError(
+      httpStatus.TOO_MANY_REQUESTS,
+      `You have exceeded your requests per minute. try after: ${new Date(
+        timeBeforeTwoMinutes
+      ).toLocaleTimeString()}`
+    );
+
+  const passcode = passcodeGenerator.generate({ length: 10, numbers: true });
+
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(passcode, salt);
+
+  const currentTime = new Date().getTime();
+  const halfHour = 1800000; // in miliseconds
+  const expiresIn = new Date(currentTime + halfHour);
+
+  //update temporary passcode at db query.
+  try {
+    await setTempPasscode(account.id, hash, expiresIn);
+  } catch (error) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `${error}`);
+  }
+
+  //the mail content and address.
+  let mailOptions = {
+    from: `${process.env.MAIL_USERNAME}@gmail.com`,
+    to: `${email}`,
+    subject: "GrayMatters Healthtemporary passcode",
+    html: `<div style="font-size: 22px;">Hi, ${account.name}</span>, <div style="font-size: 20px; margin-top: 10px;">We received a request for a temporary passcode. Please use the passcode below in order to sign in.</div></div>
+    <ul style="color: red; font-size: 18px;">
+    <li>Do not share this passcode with anyone.</li>
+    <li>The passcode will grant you access to your account for 30 minutes.  </li>
+    <li>In the event that your passcode expires, try requesting another one through our login page.</li>
+    </ul>
+    <h2 style="margin: 25px 30%; font-size:22px;">Temporary Access Key</h2>
+    <div style="font-weight: bold; font-size: 22px; border: 3px outset  LightBlue; width: fit-content; margin: 25px 35%; padding: 10px;
+      box-shadow: 5px 5px 8px CornflowerBlue; border-radius: 8px;">${passcode}</div>`,
+  };
+
+  sendMail(mailOptions);
+  res.status(httpStatus.OK).send({ response: "Email sent successfully." });
+});
+
 export default {
   getProtocols: getAllProtocols,
   getSurveys: getAllSurveys,
   getClientData: getClientData,
+  sendPasscode: sendTempPasscode,
 };
