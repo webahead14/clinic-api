@@ -62,6 +62,7 @@ export function createTreatment(clientId, protocolId, startDate, reminders) {
 export function addClient(client) {
   const user = [
     client.passcode,
+    client.temPasscode,
     client.govId,
     client.condition,
     client.phone,
@@ -73,8 +74,8 @@ export function addClient(client) {
   return db
     .query(
       `INSERT INTO clients 
-      (passcode,gov_id,condition,phone,email,name,gender) 
-      VALUES ($1,$2,$3,$4,$5,$6,$7)
+      (passcode,time_passcode,gov_id,condition,phone,email,name,gender) 
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
       RETURNING id`,
       user
     )
@@ -98,10 +99,7 @@ export function getClient(data) {
 // fetch client by govID
 export function getClientByGovId(id) {
   return db
-    .query(
-      "SELECT id, name, email, phone, time_passcode_expiry FROM clients WHERE gov_id = $1",
-      [id]
-    )
+    .query("SELECT * FROM clients WHERE gov_id = $1", [id])
     .then((client) => client.rows[0]);
 }
 
@@ -186,4 +184,18 @@ export function fetchQuestions(surveyID, lang = "en") {
       )
       .then((questions) => questions.rows);
   }
+}
+
+export function updateClient(client, clientId) {
+  return db.query(
+    `UPDATE clients SET condition = $1 phone = $2 email = $3 name = $4 gender = $5 WHERE id = $6`,
+    [...client, clientId]
+  );
+}
+
+export function updateReminder(reminder, clientId) {
+  return db.query(`UPDATE clients SET reminder = $1 WHERE client_id = $2`, [
+    reminder,
+    clientId,
+  ]);
 }

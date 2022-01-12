@@ -1,4 +1,4 @@
-import { catchAsync, ApiError, deleteProps } from "../utils";
+import { catchAsync, ApiError, deleteProps, sendMail } from "../utils";
 import { fetchProtocols, fetchSurveys } from "../models/clinics.model";
 import httpStatus from "http-status";
 import nodemailer from "nodemailer";
@@ -9,6 +9,8 @@ import bcrypt from "bcryptjs";
 dotenv.config();
 
 import {
+  updateReminder,
+  updateClient,
   getClient,
   getTreatment,
   getProtocol,
@@ -147,7 +149,9 @@ const sendTempPasscode = catchAsync(async (req, res) => {
   if (new Date() < new Date(timeBeforeTwoMinutes))
     throw new ApiError(
       httpStatus.TOO_MANY_REQUESTS,
-      "You have exceeded your requests per minute."
+      `You have exceeded your requests per minute. try after: ${new Date(
+        timeBeforeTwoMinutes
+      ).toLocaleTimeString()}`
     );
 
   const passcode = passcodeGenerator.generate({ length: 10, numbers: true });
@@ -166,59 +170,41 @@ const sendTempPasscode = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `${error}`);
   }
 
-  //sensitive data from .env file.
-  const {
-    MAIL_USERNAME,
-    MAIL_PASSWORD,
-    OAUTH_CLIENTID,
-    OAUTH_CLIENT_SECRET,
-    OAUTH_REFRESH_TOKEN,
-  } = process.env;
-
-  //transport configuration object,
-  let transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-      type: "OAuth2",
-      user: MAIL_USERNAME,
-      pass: MAIL_PASSWORD,
-      clientId: OAUTH_CLIENTID,
-      clientSecret: OAUTH_CLIENT_SECRET,
-      refreshToken: OAUTH_REFRESH_TOKEN,
-    },
-  });
-
-  //what data to send and to whom.
+  //the mail content and address.
   let mailOptions = {
-    from: `${MAIL_USERNAME}@gmail.com`,
+    from: `${process.env.MAIL_USERNAME}@gmail.com`,
     to: `${email}`,
-    subject: "Gray Matter temporary passcode",
-    // text: "Hi from your graymatter project",
-    html: `<h2><em>Temporary Access Key</em></h2><div style="font-size: 22px;">Hi <span style="text-decoration: underline;">${account.name}</span>, <div style="font-size: 20px; margin-top: 10px;">Please use the passcode you've got below in order to sign in.</div></div>
-      <ul style="color:red;font-size: 18px;">
-      <li>Don't share this passcode with anyone.</li>
-      <li>The passcode will grante you access to your account for 30 minutes only. </li>
-      </ul>
-      <div style="font-weight: bold; font-size: 22px; border: 3px outset  LightBlue; width: fit-content; margin: 25px 30%; padding: 10px;
-        box-shadow: 5px 5px 8px CornflowerBlue; border-radius: 8px;">${passcode}</div>`,
+    subject: "GrayMatters Healthtemporary passcode",
+    html: `<div style="font-size: 22px;">Hi, ${account.name}</span>, <div style="font-size: 20px; margin-top: 10px;">We received a request for a temporary passcode. Please use the passcode below in order to sign in.</div></div>
+    <ul style="color: red; font-size: 18px;">
+    <li>Do not share this passcode with anyone.</li>
+    <li>The passcode will grant you access to your account for 30 minutes.  </li>
+    <li>In the event that your passcode expires, try requesting another one through our login page.</li>
+    </ul>
+    <h2 style="margin: 25px 30%; font-size:22px;">Temporary Access Key</h2>
+    <div style="font-weight: bold; font-size: 22px; border: 3px outset  LightBlue; width: fit-content; margin: 25px 35%; padding: 10px;
+      box-shadow: 5px 5px 8px CornflowerBlue; border-radius: 8px;">${passcode}</div>`,
   };
 
-  //Send a new email.
-  transporter.sendMail(mailOptions, (err, data) => {
-    if (err) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        `An error occured: ${err.message}`
-      );
-    } else {
-      res.status(httpStatus.OK).send({ response: "Email sent successfully." });
-    }
-  });
+  sendMail(mailOptions);
+  res.status(httpStatus.OK).send({ response: "Email sent successfully." });
 });
 
+//Updates the clients data
+// req.body == {id:client_id, client:{condition,phone,email,name,gender},reminder:JSON}
+const updateClientData = catchAsync(async (req: any, res: any) => {
+  const { reminder, id, condition, phone, email, name, gender } = req.body;
+
+  await updateClient([condition, phone, email, name, gender], id);
+
+  await updateReminder(reminder, id);
+
+  res
+    .status(200)
+    .send({ success: true, message: "succeded in updating the client data" });
+});
 export default {
+  updateClientData: updateClientData,
   getProtocols: getAllProtocols,
   getSurveys: getAllSurveys,
   getClientData: getClientData,

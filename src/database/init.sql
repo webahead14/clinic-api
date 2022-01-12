@@ -60,13 +60,12 @@ CREATE TABLE questions_language (
     language varchar(2)
 );
 
-
 CREATE TABLE clients (
     id SERIAL PRIMARY KEY,
     passcode text,
     time_passcode text,
     time_passcode_expiry timestamp default '12/12/2012 12:12:12',
-    gov_id INTEGER UNIQUE not null,
+    gov_id varchar(12) UNIQUE not null,
     condition varchar(50),
     deleted boolean,
     phone varchar(13) UNIQUE,
