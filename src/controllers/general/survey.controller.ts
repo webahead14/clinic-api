@@ -15,4 +15,9 @@ const getSurveyById = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(data.survey_snapshot);
 });
 
-export default { getSurveyById };
+const addSurvey = catchAsync(async (req, res) => {
+  const data = req.body;
+  res.status(httpStatus.OK).send(data);
+});
+
+export default { getSurveyById, addSurvey };

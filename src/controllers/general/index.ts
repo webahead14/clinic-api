@@ -3,5 +3,6 @@ import surveyController from "./survey.controller";
 
 export default {
   home: homeController,
-  survey: surveyController,
+  getSurveyById: surveyController.getSurveyById,
+  addSurvey: surveyController.addSurvey,
 };

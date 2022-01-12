@@ -1,7 +1,6 @@
 import { catchAsync, ApiError, deleteProps, sendMail } from "../utils";
 import { fetchProtocols, fetchSurveys } from "../models/clinics.model";
 import httpStatus from "http-status";
-import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import passcodeGenerator from "generate-password";
 import bcrypt from "bcryptjs";
