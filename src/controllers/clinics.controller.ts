@@ -9,6 +9,8 @@ import bcrypt from "bcryptjs";
 dotenv.config();
 
 import {
+  updateReminder,
+  updateClient,
   getClient,
   getTreatment,
   getProtocol,
@@ -188,7 +190,21 @@ const sendTempPasscode = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ response: "Email sent successfully." });
 });
 
+//Updates the clients data
+// req.body == {id:client_id, client:{condition,phone,email,name,gender},reminder:JSON}
+const updateClientData = catchAsync(async (req: any, res: any) => {
+  const { reminder, id, condition, phone, email, name, gender } = req.body;
+
+  await updateClient([condition, phone, email, name, gender], id);
+
+  await updateReminder(reminder, id);
+
+  res
+    .status(200)
+    .send({ success: true, message: "succeded in updating the client data" });
+});
 export default {
+  updateClientData: updateClientData,
   getProtocols: getAllProtocols,
   getSurveys: getAllSurveys,
   getClientData: getClientData,
