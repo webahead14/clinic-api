@@ -16,3 +16,9 @@ const getSurveyById = catchAsync(async (req, res) => {
 });
 
 export default { getSurveyById };
+
+/*
+get from the frontend an array of json which every json contains an answer and its question_id
+exp:
+[{answer:json.question_id:1}]
+*/
