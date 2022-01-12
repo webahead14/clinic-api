@@ -3,6 +3,7 @@ import express from "express";
 import generalController from "./controllers/general";
 import clientController from "./controllers/clients.controller";
 import clinicController from "./controllers/clinics.controller";
+import protocolsController from "./controllers/protocols.controller";
 
 const router = express.Router();
 
@@ -15,5 +16,6 @@ router.post("/client/getPasscode", clinicController.sendPasscode);
 router.get("/clinic/client/:id", clinicController.getClientData);
 router.get("/clinic/protocols", clinicController.getProtocols);
 router.get("/clinic/surveys", clinicController.getSurveys);
+router.post("/clinic/protocol/add", protocolsController.createProtocol);
 
 export default router;

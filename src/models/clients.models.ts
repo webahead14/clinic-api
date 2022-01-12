@@ -1,5 +1,6 @@
 import db from "../database/connection";
 import fetchSurveyData from "../services/survey.service";
+import moment from "moment";
 
 export function fetchClients() {
   return db.query("SELECT * FROM clients").then((clients) => {
@@ -16,25 +17,42 @@ export function fetchSurveysByProtocolId(protocolId) {
     .then((surveys) => surveys.rows);
 }
 
-export function attachSurveysToClient(protocolId, clientId, treatmentId) {
+export function attachSurveysToClient(
+  protocolId,
+  clientId,
+  treatmentId,
+  startDate
+) {
   return fetchSurveysByProtocolId(protocolId).then((surveys) => {
     surveys.forEach(async (survey) => {
       let formattedSurvey = await fetchSurveyData(survey.survey_id);
+      let surveyDate = moment(startDate).add({ weeks: +survey.week });
       return db.query(
-        `INSERT INTO clients_surveys (client_id,survey_id,treatment_id,survey_snapshot)
-                VALUES ($1,$2,$3,$4)`,
-        [clientId, survey.id, treatmentId, JSON.stringify(formattedSurvey)]
+        `INSERT INTO clients_surveys (client_id,survey_id,treatment_id,survey_snapshot,survey_date)
+                VALUES ($1,$2,$3,$4,$5)`,
+        [
+          clientId,
+          survey.id,
+          treatmentId,
+          JSON.stringify(formattedSurvey),
+          surveyDate,
+        ]
       );
     });
   });
 }
 
-export function createTreatment(clientId, protocolId, startDate) {
-  const treatment = [clientId, protocolId, startDate];
+export function createTreatment(clientId, protocolId, startDate, reminders) {
+  const treatment = [
+    clientId,
+    protocolId,
+    startDate,
+    JSON.stringify(reminders),
+  ];
   return db
     .query(
-      `INSERT INTO treatment (client_id,protocol_id,start_date) 
-    VALUES ($1,$2,$3) RETURNING id`,
+      `INSERT INTO treatment (client_id,protocol_id,start_date,reminders) 
+    VALUES ($1,$2,$3,$4) RETURNING id`,
       treatment
     )
     .then(({ rows }) => rows[0].id);
@@ -130,8 +148,6 @@ export function getProtocol(id) {
     .then((protocol) => {
       return protocol.rows[0];
     });
-<<<<<<< HEAD
-=======
 }
 
 //get matrix by matrixID on specific language.
@@ -170,5 +186,4 @@ export function fetchQuestions(surveyID, lang = "en") {
       )
       .then((questions) => questions.rows);
   }
->>>>>>> 63e784feb25a217617a3c3425e0022df3385973d
 }
