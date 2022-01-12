@@ -35,7 +35,6 @@ const createClient = catchAsync(async (req: any, res: any) => {
     reminders,
   } = req.body;
 
-  // const protocolId = (await getClient(protocolName))[0];
 
   if (
     !passcode ||
