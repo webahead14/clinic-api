@@ -18,6 +18,7 @@ import {
   getClientByGovId,
   setTempPasscode,
 } from "../models/clients.models";
+import { emitWarning } from "process";
 
 // Get a specific client's data
 const getClientData = catchAsync(async (req: any, res: any) => {
@@ -235,6 +236,7 @@ const updateClientData = catchAsync(async (req: any, res: any) => {
       req.body.id
     );
     await updateReminder(req.body.reminder, req.body.id);
+    res.status(200).send("succeded in updating the client data");
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `${error}`);
   }
