@@ -22,7 +22,7 @@ export const fetchSurveyById = (id: number) => {
 };
 
 //get matrix by matrixID on specific language.
-export function fetchMatrix(id, lang = "en") {
+export function fetchMatrix(id: number, lang: string = "en") {
   if (lang === "en")
     return db
       .query("SELECT * FROM matrix WHERE id = $1", [id])
@@ -39,7 +39,7 @@ export function fetchMatrix(id, lang = "en") {
 }
 
 //get questions by surveyID on specific language
-export function fetchQuestions(surveyID, lang = "en") {
+export function fetchQuestions(surveyID: number, lang: string = "en") {
   if (lang === "en")
     return db
       .query(
@@ -58,3 +58,72 @@ export function fetchQuestions(surveyID, lang = "en") {
       .then((questions) => questions.rows);
   }
 }
+
+//set new survey and return it id.
+export const setSurvey = (name: string) => {
+  return db
+    .query("INSERT INTO surveys(name) VALUES($1) RETURNING id", [name])
+    .then((res) => res.rows[0].id);
+};
+
+//get servy
+export const fetchSurveyByName = (name: string) => {
+  return db
+    .query("SELECT * FROM surveys WHERE name = $1", [name])
+    .then((response) => response.rows);
+};
+
+//take matrix object as an argument and return it id after inserting it to matrix table.
+export const setMatrix = ({
+  title,
+  columns,
+  answers,
+  instructions,
+}: {
+  title: string;
+  columns: string;
+  answers: string;
+  instructions: string;
+}) => {
+  const values = [title, columns, answers, instructions];
+  return db
+    .query(
+      "INSERT INTO matrix(title, columns, answers, instructions) VALUES($1, $2, $3, $4) RETURNING id",
+      values
+    )
+    .then((res) => res.rows[0].id);
+};
+
+//take a question object as an argument and return it id after inserting it to questions table.
+export const setQuestions = ({
+  matrixID,
+  type,
+  group,
+  question,
+  extraData,
+}: {
+  matrixID: number;
+  type: string;
+  group: string;
+  question: string;
+  extraData: string;
+}) => {
+  const values = [matrixID, type, group, question, extraData];
+  return db
+    .query(
+      `INSERT INTO questions(matrix_id, type, "group", question, extra_data) VALUES($1, $2, $3, $4, $5) RETURNING id`,
+      values
+    )
+    .then((res) => res.rows[0].id);
+};
+
+//set new survey and return it id.
+export const attachQuestionsToSurvey = (
+  questionsID: number,
+  surveyID: number
+) => {
+  return db.query(
+    "INSERT INTO questions_surveys(question_id, survey_id) VALUES($1, $2) RETURNING id",
+    [questionsID, surveyID]
+  );
+};
