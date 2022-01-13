@@ -95,7 +95,7 @@ CREATE TABLE answers (
     id SERIAL PRIMARY KEY,
     answer json,
     question_id INTEGER REFERENCES questions(id),
-    created_at DATE
+    created_at DATE DEFAULT CURRENT_DATE
 );
 
 CREATE TABLE clients_surveys(

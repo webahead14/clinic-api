@@ -2,31 +2,21 @@ import db from "../database/connection";
 
 export const fetchQuestionsBySurveyId = (surveyId: number) => {
   return db
-    .query(
-      "SELECT * FROM questions_surveys qs INNER JOIN questions ON questions.id = qs.question_id WHERE qs.survey_id = $1",
-      [surveyId]
-    )
+    .query("SELECT * FROM questions_surveys qs INNER JOIN questions ON questions.id = qs.question_id WHERE qs.survey_id = $1", [surveyId])
     .then((response) => response.rows);
 };
 
 export const fetchMatrixById = (matrixId: number) => {
-  return db
-    .query("SELECT * FROM matrix WHERE id = $1", [matrixId])
-    .then((response) => response.rows);
+  return db.query("SELECT * FROM matrix WHERE id = $1", [matrixId]).then((response) => response.rows);
 };
 
 export const fetchSurveyById = (id: number) => {
-  return db
-    .query("SELECT * FROM clients_surveys WHERE id = $1", [id])
-    .then((response) => response.rows);
+  return db.query("SELECT * FROM clients_surveys WHERE id = $1", [id]).then((response) => response.rows);
 };
 
 //get matrix by matrixID on specific language.
 export function fetchMatrix(id, lang = "en") {
-  if (lang === "en")
-    return db
-      .query("SELECT * FROM matrix WHERE id = $1", [id])
-      .then((matrix) => matrix.rows[0]);
+  if (lang === "en") return db.query("SELECT * FROM matrix WHERE id = $1", [id]).then((matrix) => matrix.rows[0]);
   else {
     return db
       .query(
@@ -57,4 +47,8 @@ export function fetchQuestions(surveyID, lang = "en") {
       )
       .then((questions) => questions.rows);
   }
+}
+
+export function addAnswers(query) {
+  return db.query(`INSERT INTO answers (answer,question_id) VALUES ${query}`);
 }
