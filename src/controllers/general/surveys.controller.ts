@@ -5,6 +5,7 @@ import {
   setMatrix,
   setQuestions,
   attachQuestionsToSurvey,
+  addAnswers,
 } from "../../models/surveys.models";
 import { catchAsync, ApiError, updateMatrices } from "../../utils";
 import httpStatus from "http-status";
@@ -20,6 +21,17 @@ const getSurveyById = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "Survey was missed");
 
   res.status(httpStatus.OK).send(data.survey_snapshot);
+});
+
+const insertAnswers = catchAsync(async (req, res) => {
+  const answers = req.body;
+  let multipeRows = "";
+  answers.map((element, index) => {
+    multipeRows += `(${element.answers},${element.question_id})`;
+    index == answers.length - 1 ? (multipeRows += ";") : (multipeRows += ",");
+  });
+  await addAnswers(multipeRows);
+  res.send({ status: "success" });
 });
 
 const addSurvey = catchAsync(async (req, res) => {
@@ -117,4 +129,4 @@ const addSurvey = catchAsync(async (req, res) => {
     .send("The survey and it questions has been created successfully.");
 });
 
-export default { getSurveyById, addSurvey };
+export default { getSurveyById, addSurvey, insertAnswers };

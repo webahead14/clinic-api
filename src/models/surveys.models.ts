@@ -21,6 +21,10 @@ export const fetchSurveyById = (id: number) => {
     .then((response) => response.rows);
 };
 
+export function addAnswers(query) {
+  return db.query(`INSERT INTO answers (answer,question_id) VALUES ${query}`);
+}
+
 //get matrix by matrixID on specific language.
 export function fetchMatrix(id: number, lang: string = "en") {
   if (lang === "en")
