@@ -16,19 +16,13 @@ const getSurveyById = catchAsync(async (req, res) => {
 
 const insertAnswers = catchAsync(async (req, res) => {
   const answers = req.body;
-  let query = "";
+  let multipeRows = "";
   answers.map((element, index) => {
-    query += `(${element.answers},${element.question_id})`;
-    index == answers.length - 1 ? (query += ";") : (query += ",");
+    multipeRows += `(${element.answers},${element.question_id})`;
+    index == answers.length - 1 ? (multipeRows += ";") : (multipeRows += ",");
   });
-  addAnswers(query);
-  res.send();
+  await addAnswers(multipeRows);
+  res.send("success");
 });
 
 export default { getSurveyById, insertAnswers };
-
-/*
-get from the frontend an array of json which every json contains an answer and its question_id
-exp:
-[{answer:json.question_id:1}]
-*/
