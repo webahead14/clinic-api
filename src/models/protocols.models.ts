@@ -16,9 +16,3 @@ export const addProtocol = (name) => {
     ])
     .then(({ rows }) => rows[0].id);
 };
-
-export const fetchSurveyIdByName = (name) => {
-  return db
-    .query(`SELECT id FROM surveys WHERE name=$1`, [name])
-    .then(({ rows }) => rows[0].id);
-};

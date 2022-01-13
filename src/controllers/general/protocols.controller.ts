@@ -1,11 +1,11 @@
-import catchAsync from "../utils/catchAsync";
-import ApiError from "../utils/ApiError";
+import { ApiError, catchAsync } from "../../utils";
 import httpStatus from "http-status";
 import {
   addProtocol,
   addSurveysToProtocol,
-  fetchSurveyIdByName,
-} from "../models/protocols.models";
+} from "../../models/protocols.models";
+
+import { fetchSurveyByName } from "../../models/surveys.models";
 
 const createProtocol = catchAsync(async (req, res) => {
   const { name, protocolData } = req.body;
@@ -16,7 +16,7 @@ const createProtocol = catchAsync(async (req, res) => {
     //iterate over every week, on every single one iterate over every survey then tie each survey to the protocolID and to the week it's scheduled on.
     for (const [protocolDataIndex, week] of protocolData.entries()) {
       for (const [surveysIndex, survey] of week.surveys.entries()) {
-        const surveyId = await fetchSurveyIdByName(survey);
+        const surveyId = (await fetchSurveyByName(survey))[0].id;
         multipleRows += `(${surveyId},${protocolId},${week.week})`;
         //as long as it's not that last survey and not the last week => insert ','
         surveysIndex == week.surveys.length - 1 &&
@@ -36,6 +36,4 @@ const createProtocol = catchAsync(async (req, res) => {
   res.send({ status: "success" });
 });
 
-export default {
-  createProtocol: createProtocol,
-};
+export default { createProtocol };

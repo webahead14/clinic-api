@@ -76,7 +76,7 @@ CREATE TABLE clients (
 
 CREATE TABLE treatment(
     id SERIAL PRIMARY KEY,
-    client_id INTEGER REFERENCES clients(id),
+    client_id INTEGER,
     protocol_id INTEGER REFERENCES protocols(id),
     start_date DATE,
     status treatment_status DEFAULT 'on-going',
@@ -108,8 +108,7 @@ CREATE TABLE questions_surveys(
     survey_id INTEGER REFERENCES surveys(id)
 );
 
-INSERT INTO matrix (id,title,columns,answers,instructions) VALUES(
-    1,
+INSERT INTO matrix (title,columns,answers,instructions) VALUES(
     'do you feel bothered from:',
     '["Poorly","Semi-Poorly","Avarage","Semi-Strongly","Strongly"]',
     '["0", "1", "2", "3", "4"]',
@@ -132,14 +131,14 @@ INSERT INTO matrix_languages (matrix_id,title,columns,instructions,language) VAL
     'ar'
 );
 
-INSERT INTO questions (id,question,type,"group",matrix_id,extra_data) VALUES
-    (1,'Feeling very upset when something reminds you of the stressful experience?','matrix','group_xyz',1,'{}'),
-    (2,'Trouble remembering important parts of the stressful experience?','matrix','group_xyz',1,'{}'),
-    (3,'Loss of interest in activities that you used to enjoy?','matrix','group_xyz',1,'{}'),
-    (4,'Irritable behaviour, angry outbursts, or acting aggressively?','matrix','group_xyz',1,'{}'),
-    (5,'Which choice of the choices below you think it will impact your stress the most?','multiple_choice','group_xyz_multi1',null,'{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "Smoke"},{"text": "Exercise"},{"text": "Drink alcohol"},{"text": "Eat"}]}}'),
-    (6,'Mark the type of pains you''ve encountered lately:','multiple_choice','group_xyz_multi2',null,'{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "Physical Pain"},{"text": "Mental Pain"},{"text": "Spiritual Pain"}]}}'),
-    (7,'Anything else?','open_text','group_xyz_open',null,'{"openText": {"inputPlaceholder": "Please write the answer here"}}'
+INSERT INTO questions (question,type,"group",matrix_id,extra_data) VALUES
+    ('Feeling very upset when something reminds you of the stressful experience?','matrix','group_xyz',1,'{}'),
+    ('Trouble remembering important parts of the stressful experience?','matrix','group_xyz',1,'{}'),
+    ('Loss of interest in activities that you used to enjoy?','matrix','group_xyz',1,'{}'),
+    ('Irritable behaviour, angry outbursts, or acting aggressively?','matrix','group_xyz',1,'{}'),
+    ('Which choice of the choices below you think it will impact your stress the most?','multiple_choice','group_xyz_multi1',null,'{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "Smoke"},{"text": "Exercise"},{"text": "Drink alcohol"},{"text": "Eat"}]}}'),
+    ('Mark the type of pains you''ve encountered lately:','multiple_choice','group_xyz_multi2',null,'{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "Physical Pain"},{"text": "Mental Pain"},{"text": "Spiritual Pain"}]}}'),
+    ('Anything else?','open_text','group_xyz_open',null,'{"openText": {"inputPlaceholder": "Please write the answer here"}}'
 );
 
 INSERT INTO questions_language (question_id, question, extra_data,language) VALUES
@@ -160,13 +159,13 @@ INSERT INTO questions_language (question_id, question, extra_data,language) VALU
     (7,'أي شيء آخر؟','{"openText": {"inputPlaceholder": "من فضلك اكتب الجواب هنا"}}','ar'
 );
 
-INSERT INTO surveys VALUES 
-    (1,'PCL-5'),
-    (2,'GAD'),
-    (3,'PHQ'),
-    (4,'PGI-S'),
-    (5,'PGI-A'),
-    (6,'PGI-T'
+INSERT INTO surveys(name) VALUES 
+    ('PCL-5'),
+    ('GAD'),
+    ('PHQ'),
+    ('PGI-S'),
+    ('PGI-A'),
+    ('PGI-T'
 );
 
 INSERT INTO questions_surveys (question_id, survey_id) VALUES
@@ -179,12 +178,12 @@ INSERT INTO questions_surveys (question_id, survey_id) VALUES
     (7, 1
 );
 
--- INSERT INTO protocols(name,condition) VALUES
---     ('PCL-5','PTSD'),
---     ('GAD','Anxiety'),
---     ('PST','Stoner'),
---     ('THC','Hala'
--- );
+INSERT INTO protocols(name,condition) VALUES
+    ('PCL-5','PTSD'),
+    ('GAD','Anxiety'),
+    ('PST','Stoner'),
+    ('THC','Hala'
+);
 
 
 -- INSERT INTO protocols_surveys(survey_id,protocol_id,week) VALUES
