@@ -1,24 +1,18 @@
 import db from "../database/connection";
 
+//attach surveys to specific protocol.
 export const addSurveysToProtocol = (data) => {
-  return db
-    .query(
-      `INSERT INTO protocols_surveys (survey_id,protocol_id,week) VALUES ${data}`
-    )
-    .then(({ rows }) => rows);
+  return db.query(
+    `INSERT INTO protocols_surveys (survey_id,protocol_id,week) VALUES ${data}`
+  );
 };
 
-export const addProtocol = (data) => {
+//add protocol by name, condition is not beeing updated for now.
+export const addProtocol = (name) => {
   return db
     .query(`INSERT INTO protocols(name,condition) VALUES($1,$2) RETURNING id`, [
-      data.name,
+      name,
       "",
     ])
-    .then(({ rows }) => rows);
-};
-
-export const fetchSurveyIdByName = (name) => {
-  return db
-    .query(`SELECT id FROM surveys WHERE name=$1`, [name])
-    .then(({ rows }) => rows);
+    .then(({ rows }) => rows[0].id);
 };
