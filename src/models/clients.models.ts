@@ -3,9 +3,15 @@ import fetchSurveyData from "../services/survey.service";
 import moment from "moment";
 
 export function fetchClients() {
-  return db.query("SELECT * FROM clients").then((clients) => {
-    return clients.rows;
-  });
+  return db
+    .query(
+      `SELECT clients.id, clients.name, clients.phone, clients.condition, 
+  treatment.start_date, treatment.status, protocols.name AS protoc FROM clients LEFT JOIN treatment ON clients.id = treatment.client_id
+  INNER JOIN protocols ON protocols.id = treatment.protocol_id`
+    )
+    .then((clients) => {
+      return clients.rows;
+    });
 }
 
 export function fetchSurveysByProtocolId(protocolId) {
@@ -147,6 +153,7 @@ export function getProtocol(id) {
       return protocol.rows[0];
     });
 }
+
 
 //get matrix by matrixID on specific language.
 export function fetchMatrix(id, lang = "en") {

@@ -35,6 +35,7 @@ const createClient = catchAsync(async (req: any, res: any) => {
     reminders,
   } = req.body;
 
+
   if (
     !passcode ||
     !govId ||
@@ -68,6 +69,7 @@ const createClient = catchAsync(async (req: any, res: any) => {
     email,
     name,
     gender,
+    protocolId,
   };
   client.passcode = hash;
   const clientId = await addClient(client);

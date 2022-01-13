@@ -22,9 +22,7 @@ import {
 // Get a specific client's data
 const getClientData = catchAsync(async (req: any, res: any) => {
   const id = req.params.id;
-
   const client = (await getClient(id))[0];
-
   if (!client) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No client found");
   }
@@ -87,6 +85,7 @@ const getAllProtocols = catchAsync(async (req, res) => {
     protocol.surveysAmount = protocol.surveys_amount;
     protocol.surveysTypes = protocol.surveys_types;
     protocol.date = protocol.created_at.toLocaleDateString("he-il");
+    protocol.id = protocol.id;
 
     deleteProps(protocol, [
       "created_at",
