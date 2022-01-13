@@ -22,7 +22,7 @@ const insertAnswers = catchAsync(async (req, res) => {
     index == answers.length - 1 ? (multipeRows += ";") : (multipeRows += ",");
   });
   await addAnswers(multipeRows);
-  res.send("success");
+  res.send({ status: "success" });
 });
 
 export default { getSurveyById, insertAnswers };
