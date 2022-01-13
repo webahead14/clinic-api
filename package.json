@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "NODE_ENV=development ts-node-dev src/app.ts",
     "build": "tsc",
-    "start": "pm2 ecosystem.config.js",
+    "start": "node dist/app.js",
     "build:db": "ts-node src/database/build.ts"
   },
   "author": "",
