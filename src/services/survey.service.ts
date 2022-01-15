@@ -1,4 +1,7 @@
-import { fetchMatrixById, fetchQuestionsBySurveyId } from "../models/survey";
+import {
+  fetchMatrixById,
+  fetchQuestionsBySurveyId,
+} from "../models/surveys.models";
 
 export const fetchSurveyData = async (surveyId: number = 1) => {
   const groupsFound = [];

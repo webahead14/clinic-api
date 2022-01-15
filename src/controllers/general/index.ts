@@ -1,7 +1,10 @@
 import homeController from "./home.controller";
-import surveyController from "./survey.controller";
+import surveysController from "./surveys.controller";
+import protocolsController from "./protocols.controller";
 
 export default {
   home: homeController,
-  survey: surveyController,
+  getSurveyById: surveysController.getSurveyById,
+  addSurvey: surveysController.addSurvey,
+  createProtocol: protocolsController.createProtocol,
 };

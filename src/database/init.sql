@@ -1,26 +1,18 @@
 BEGIN;
 
-DROP TABLE IF EXISTS protocols_surveys,clinics,questions,questions_language,matrix,matrix_languages,surveys,protocols,clients,clients_surveys,questions_surveys,answers,treatment CASCADE;
+DROP TABLE IF EXISTS protocols_surveys,questions,questions_language,matrix,matrix_languages,surveys,protocols,clients,clients_surveys,questions_surveys,answers,treatment CASCADE;
 DROP TYPE IF EXISTS treatment_status CASCADE;
 
 CREATE TYPE treatment_status AS ENUM ('on-going', 'finished');
 
-CREATE TABLE clinics (
-    id SERIAL PRIMARY KEY,
-    username varchar(255),
-    password varchar(255)
-);
-
 CREATE TABLE surveys (
     id SERIAL PRIMARY KEY,
-    clinic_id INTEGER REFERENCES clinics(id),
     name varchar(50),
     created_at timestamp default CURRENT_TIMESTAMP not null
 );
 
 CREATE TABLE protocols (
     id SERIAL PRIMARY KEY,
-    clinic_id INTEGER REFERENCES clinics(id),
     name varchar(50),
     condition varchar(50),
     created_at timestamp default CURRENT_TIMESTAMP not null
@@ -84,7 +76,7 @@ CREATE TABLE clients (
 
 CREATE TABLE treatment(
     id SERIAL PRIMARY KEY,
-    client_id INTEGER REFERENCES clients(id),
+    client_id INTEGER,
     protocol_id INTEGER REFERENCES protocols(id),
     start_date DATE,
     status treatment_status DEFAULT 'on-going',
@@ -95,7 +87,7 @@ CREATE TABLE answers (
     id SERIAL PRIMARY KEY,
     answer json,
     question_id INTEGER REFERENCES questions(id),
-    created_at DATE DEFAULT CURRENT_DATE
+    created_at DATE
 );
 
 CREATE TABLE clients_surveys(
@@ -116,8 +108,7 @@ CREATE TABLE questions_surveys(
     survey_id INTEGER REFERENCES surveys(id)
 );
 
-INSERT INTO matrix (id,title,columns,answers,instructions) VALUES(
-    1,
+INSERT INTO matrix (title,columns,answers,instructions) VALUES(
     'do you feel bothered from:',
     '["Poorly","Semi-Poorly","Avarage","Semi-Strongly","Strongly"]',
     '["0", "1", "2", "3", "4"]',
@@ -140,14 +131,14 @@ INSERT INTO matrix_languages (matrix_id,title,columns,instructions,language) VAL
     'ar'
 );
 
-INSERT INTO questions (id,question,type,"group",matrix_id,extra_data) VALUES
-    (1,'Feeling very upset when something reminds you of the stressful experience?','matrix','group_xyz',1,'{}'),
-    (2,'Trouble remembering important parts of the stressful experience?','matrix','group_xyz',1,'{}'),
-    (3,'Loss of interest in activities that you used to enjoy?','matrix','group_xyz',1,'{}'),
-    (4,'Irritable behaviour, angry outbursts, or acting aggressively?','matrix','group_xyz',1,'{}'),
-    (5,'Which choice of the choices below you think it will impact your stress the most?','multiple_choice','group_xyz_multi1',null,'{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "Smoke"},{"text": "Exercise"},{"text": "Drink alcohol"},{"text": "Eat"}]}}'),
-    (6,'Mark the type of pains you''ve encountered lately:','multiple_choice','group_xyz_multi2',null,'{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "Physical Pain"},{"text": "Mental Pain"},{"text": "Spiritual Pain"}]}}'),
-    (7,'Anything else?','open_text','group_xyz_open',null,'{"openText": {"inputPlaceholder": "Please write the answer here"}}'
+INSERT INTO questions (question,type,"group",matrix_id,extra_data) VALUES
+    ('Feeling very upset when something reminds you of the stressful experience?','matrix','group_xyz',1,'{}'),
+    ('Trouble remembering important parts of the stressful experience?','matrix','group_xyz',1,'{}'),
+    ('Loss of interest in activities that you used to enjoy?','matrix','group_xyz',1,'{}'),
+    ('Irritable behaviour, angry outbursts, or acting aggressively?','matrix','group_xyz',1,'{}'),
+    ('Which choice of the choices below you think it will impact your stress the most?','multiple_choice','group_xyz_multi1',null,'{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "Smoke"},{"text": "Exercise"},{"text": "Drink alcohol"},{"text": "Eat"}]}}'),
+    ('Mark the type of pains you''ve encountered lately:','multiple_choice','group_xyz_multi2',null,'{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "Physical Pain"},{"text": "Mental Pain"},{"text": "Spiritual Pain"}]}}'),
+    ('Anything else?','open_text','group_xyz_open',null,'{"openText": {"inputPlaceholder": "Please write the answer here"}}'
 );
 
 INSERT INTO questions_language (question_id, question, extra_data,language) VALUES
@@ -168,17 +159,13 @@ INSERT INTO questions_language (question_id, question, extra_data,language) VALU
     (7,'أي شيء آخر؟','{"openText": {"inputPlaceholder": "من فضلك اكتب الجواب هنا"}}','ar'
 );
 
-INSERT INTO clinics VALUES (
-    1,'admin','admin'
-);
-
-INSERT INTO surveys VALUES 
-    (1,1,'PCL-5'),
-    (2,1,'PSG-1'),
-    (3,1,'ELB-3'),
-    (4,1,'SGN-2'),
-    (5,1,'LMB-1'),
-    (6,1,'RMB-1'
+INSERT INTO surveys(name) VALUES 
+    ('PCL-5'),
+    ('GAD'),
+    ('PHQ'),
+    ('PGI-S'),
+    ('PGI-A'),
+    ('PGI-T'
 );
 
 INSERT INTO questions_surveys (question_id, survey_id) VALUES
@@ -191,27 +178,28 @@ INSERT INTO questions_surveys (question_id, survey_id) VALUES
     (7, 1
 );
 
-INSERT INTO protocols(clinic_id,name,condition) VALUES
-    (1,'PCL-5','PTSD'),
-    (1,'GAD','Anxiety'),
-    (1,'PST-420-BLAZEIT','Stoner'),
-    (1,'THC','Hala'
+INSERT INTO protocols(name,condition) VALUES
+    ('PCL-5','PTSD'),
+    ('GAD','Anxiety'),
+    ('PST','Stoner'),
+    ('THC','Hala'
 );
 
-INSERT INTO protocols_surveys(survey_id,protocol_id,week) VALUES
-    (1,1,1),
-    (1,2,2),
-    (1,3,3),
-    (1,1,3),
-    (1,4,4),
-    (2,4,4),
-    (1,4,5),
-    (1,4,6
-);
 
--- INSERT INTO clients (passcode,time_passcode,gov_id,condition,deleted,phone,email,name,gender)
--- VALUES
--- ('$2a$10$xl6RQwCyucfYs85hF/JdBuoHctXf5trwl8E3S8.EL0fSQt7p7yYU.','M4R70','212771406','PTSD',false,'0525080784','durd2001@gmail.com','George Joubran', 'male');
+-- INSERT INTO protocols_surveys(survey_id,protocol_id,week) VALUES
+--     (1,1,1),
+--     (1,2,2),
+--     (1,3,3),
+--     (1,1,3),
+--     (1,4,4),
+--     (2,4,4),
+--     (1,4,5),
+--     (1,4,6
+-- );
+
+INSERT INTO clients (passcode,time_passcode,gov_id,condition,deleted,phone,email,name,gender)
+VALUES
+('$2a$10$xl6RQwCyucfYs85hF/JdBuoHctXf5trwl8E3S8.EL0fSQt7p7yYU.','M4R70','212771406','PTSD',false,'0525080784','durd2001@gmail.com','George Joubran', 'male');
 
 -- Inserting into treatment, not needed for now, could use for later.
 INSERT INTO treatment (client_id,protocol_id,start_date,status) VALUES
