@@ -56,6 +56,9 @@ CREATE TABLE questions_language (
     id SERIAL PRIMARY KEY,
     question_id INTEGER REFERENCES questions(id),
     question varchar(255),
+    type varchar(36),
+    "group" varchar(60),
+    matrix_id INTEGER REFERENCES matrix(id),
     extra_data json,
     language varchar(2)
 );
@@ -76,7 +79,7 @@ CREATE TABLE clients (
 
 CREATE TABLE treatment(
     id SERIAL PRIMARY KEY,
-    client_id INTEGER,
+    client_id INTEGER REFERENCES clients(id),
     protocol_id INTEGER REFERENCES protocols(id),
     start_date DATE,
     status treatment_status DEFAULT 'on-going',
@@ -141,32 +144,32 @@ INSERT INTO questions (question,type,"group",matrix_id,extra_data) VALUES
     ('Anything else?','open_text','group_xyz_open',null,'{"openText": {"inputPlaceholder": "Please write the answer here"}}'
 );
 
-INSERT INTO questions_language (question_id, question, extra_data,language) VALUES
-    (1,'מרגישים מוטרדים מאוד כשמשהו מזכיר לכם את החוויה המלחיצה?','{}','he'),
-    (2,'מתקשים לזכור חלקים חשובים מהחוויה המלחיצה?','{}','he'),
-    (3,'אובדן עניין בפעילויות שנהניתם מהן?','{}','he'),
-    (4,'התנהגות עצבנית, התפרצויות כעס או התנהגות אגרסיבית?','{}','he'),
-    (5,'איזו בחירה מבין האפשרויות למטה לדעתך תשפיע הכי הרבה עליך מבחנת לחץ?','{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "עישון"},{"text": "ספורט"},{"text": "אלכוהול"},{"text": "אוכל"}]}}','he'),
-    (6,'סמן את סוג הכאבים שנתקלת בהם לאחרונה:','{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "כאב פיזי"},{"text": "כאב נפשי"},{"text": "כאב רוחני"}]}}','he'),
-    (7,'עוד משהו להוסיף?','{"openText": {"inputPlaceholder": "נא לכתוב כאן את התשובה"}}','he'
+INSERT INTO questions_language (question_id, question, type, "group", matrix_id, extra_data,language) VALUES
+    (1,'מרגישים מוטרדים מאוד כשמשהו מזכיר לכם את החוויה המלחיצה?', 'matrix','group_xyz',1, '{}','he'),
+    (2,'מתקשים לזכור חלקים חשובים מהחוויה המלחיצה?',' matrix','group_xyz',1, '{}','he'),
+    (3,'אובדן עניין בפעילויות שנהניתם מהן?', 'matrix','group_xyz',1, '{}','he'),
+    (4,'התנהגות עצבנית, התפרצויות כעס או התנהגות אגרסיבית?', 'matrix','group_xyz',1,'{}','he'),
+    (5,'איזו בחירה מבין האפשרויות למטה לדעתך תשפיע הכי הרבה עליך מבחנת לחץ?','multiple_choice','group_xyz_multi1',null,'{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "עישון"},{"text": "ספורט"},{"text": "אלכוהול"},{"text": "אוכל"}]}}','he'),
+    (6,'סמן את סוג הכאבים שנתקלת בהם לאחרונה:','multiple_choice','group_xyz_multi2',null,'{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "כאב פיזי"},{"text": "כאב נפשי"},{"text": "כאב רוחני"}]}}','he'),
+    (7,'עוד משהו להוסיף?','open_text','group_xyz_open',null,'{"openText": {"inputPlaceholder": "נא לכתוב כאן את התשובה"}}','he'
 ),
-    (1,'هل تشعر بالضيق الشديد عندما تتذكر معاناة الضغوطات الحياتية؟','{}','ar'),
-    (2,'هل تواجه صعوبة في تذكر أجزاء مهمة من معاناة الضغوطات الحياتية التي خضتها؟','{}','ar'),
-    (3,'فقدان الاهتمام بالفعاليات التي كنت تستمتع بها؟','{}','ar'),
-    (4,'سلوك عصبي ، نوبات غضب ، أو التصرف بعدوانية؟','{}','ar'),
-    (5,'أي اختيار من الخيارات أدناه تعتقد أنه سيؤثر عليك أكثر؟','{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "التدخين"},{"text": "التمارين الرياضية"},{"text": "المشروبات الروحية"},{"text": "الأكل"}]}}','ar'),
-    (6,'حدد نوع الآلام التي واجهتها مؤخرًا:','{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "ألم جسدي"},{"text": "ألم نفسي"},{"text": "ألم روحاني"}]}}','ar'),
-    (7,'أي شيء آخر؟','{"openText": {"inputPlaceholder": "من فضلك اكتب الجواب هنا"}}','ar'
+    (1,'هل تشعر بالضيق الشديد عندما تتذكر معاناة الضغوطات الحياتية؟','matrix','group_xyz',1,'{}','ar'),
+    (2,'هل تواجه صعوبة في تذكر أجزاء مهمة من معاناة الضغوطات الحياتية التي خضتها؟','matrix','group_xyz',1,'{}','ar'),
+    (3,'فقدان الاهتمام بالفعاليات التي كنت تستمتع بها؟','matrix','group_xyz',1,'{}','ar'),
+    (4,'سلوك عصبي ، نوبات غضب ، أو التصرف بعدوانية؟','matrix','group_xyz',1,'{}','ar'),
+    (5,'أي اختيار من الخيارات أدناه تعتقد أنه سيؤثر عليك أكثر؟','multiple_choice','group_xyz_multi1',null,'{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "التدخين"},{"text": "التمارين الرياضية"},{"text": "المشروبات الروحية"},{"text": "الأكل"}]}}','ar'),
+    (6,'حدد نوع الآلام التي واجهتها مؤخرًا:','multiple_choice','group_xyz_multi2',null,'{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "ألم جسدي"},{"text": "ألم نفسي"},{"text": "ألم روحاني"}]}}','ar'),
+    (7,'أي شيء آخر؟','open_text','group_xyz_open',null,'{"openText": {"inputPlaceholder": "من فضلك اكتب الجواب هنا"}}','ar'
 );
 
 INSERT INTO surveys(name) VALUES 
-    ('PCL-5'),
-    ('GAD'),
-    ('PHQ'),
-    ('PGI-S'),
-    ('PGI-A'),
-    ('PGI-T'
-);
+    ('PCL-5');
+--     ('GAD'),
+--     ('PHQ'),
+--     ('PGI-S'),
+--     ('PGI-A'),
+--     ('PGI-T'
+-- );
 
 INSERT INTO questions_surveys (question_id, survey_id) VALUES
     (1, 1),
@@ -205,7 +208,7 @@ INSERT INTO questions_surveys (question_id, survey_id) VALUES
 -- INSERT INTO treatment (client_id,protocol_id,start_date,status) VALUES
 -- (1,1,'2022-01-16','on-going');
 
--- INSERT INTO clients_surveys(client_id, survey_id, treatment_id, is_done, is_partially_done, has_missed, survey_snapshot)
+-- INSERT INTO clients_surveys(client_id, survey_id, treatment_id, is_done, is_partially_done, has_missed, survey_snapshot, snapshot_language)
 -- VALUES
 -- (1, 1, 1, false, false, false, '[{"type":"matrix","title":"Do you feel bothered from:","columns":["Poorly","Semi-Poorly","Avarage","Semi-Strongly","Strongly"],"answers":["0","1","2","3","4"],"instructions":"Below is a list of problems and complaints that people sometimes have in response to stressful life experiences. How much you have been bothered by that problem IN THE LAST MONTH.","questions":[{"id":"1","question":"Feeling very upset when something reminds you of the stressful experience?"},{"id":"2","question":"Trouble remembering important parts of the stressful experience?"},{"id":"3","question":"Loss of interest in activities that you used to enjoy?"},{"id":"4","question":"Irritable behaviour, angry outbursts, or acting aggressively??"}]},{"id":"5","type":"multiple_choice","choice_type":"Radio","question":"Which choice of the choices below you think it will impact you stress the most?","answers":[{"text":"Smoke"},{"text":"Exercide"},{"text":"Drink"},{"text":"Eat"}]},{"id":"6","type":"multiple_choice","choice_type":"Checkbox","question":"Mark the type of injuries you''ve encountered lately:","answers":[{"text":"Physical Pain"},{"text":"Mental Pain"},{"text":"Spiritual Pain"}]},{"type":"open_text","id":"7","question":"Anything else?","placeholder":"Enter your answer here"}]');
 

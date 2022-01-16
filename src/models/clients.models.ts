@@ -31,7 +31,11 @@ export function attachSurveysToClient(
 ) {
   return fetchSurveysByProtocolId(protocolId).then((surveys) => {
     surveys.forEach(async (survey) => {
-      let formattedSurvey = await fetchSurveyData(survey.survey_id);
+      let formattedSurvey = {
+        en: await fetchSurveyData(survey.survey_id),
+        ar: await fetchSurveyData(survey.survey_id, "ar"),
+        he: await fetchSurveyData(survey.survey_id, "he"),
+      };
       let surveyDate = moment(startDate).add({ weeks: +survey.week });
       return db.query(
         `INSERT INTO clients_surveys (client_id,survey_id,treatment_id,survey_snapshot,survey_date)

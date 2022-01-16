@@ -76,7 +76,6 @@ const remindersJob = () =>
 
         var sent = false;
         if (currDate === surveyDate) {
-          console.log("in");
           treatment.reminders.forEach(async (reminder) => {
             if (sent) {
               return;
