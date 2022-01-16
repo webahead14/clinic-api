@@ -28,6 +28,7 @@ app.use(errorConverter);
 app.use(errorHandler);
 
 cron.remindersJob();
+cron.updateMissedJob();
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port} `);

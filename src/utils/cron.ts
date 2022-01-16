@@ -9,7 +9,9 @@ const updateMissedJob = () =>
   // runs everyday on midnight
   cron.schedule("0 59 23 * * *", async function () {
     const treatments = await db
-      .query(`SELECT client_id FROM treatment WHERE status='on-going'`)
+      .query(
+        `SELECT client_id,reminders FROM treatment WHERE status='on-going'`
+      )
       .then(({ rows }) => rows);
 
     treatments.forEach(async (treatment) => {

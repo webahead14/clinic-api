@@ -18,5 +18,6 @@ router.get("/clinic/client/:id", clinicController.getClientData);
 router.get("/clinic/protocols", clinicController.getProtocols);
 router.get("/clinic/surveys", clinicController.getSurveys);
 router.post("/clinic/client/update", clinicController.updateClientData);
+router.get("/client/surveys/:id", generalController.avaliableSurveys);
 
 export default router;
