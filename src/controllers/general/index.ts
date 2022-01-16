@@ -7,4 +7,5 @@ export default {
   getSurveyById: surveysController.getSurveyById,
   addSurvey: surveysController.addSurvey,
   createProtocol: protocolsController.createProtocol,
+  avaliableSurveys: surveysController.getAvaliableSurveys,
 };

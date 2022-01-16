@@ -21,6 +21,12 @@ export const fetchSurveyById = (id: number) => {
     .then((response) => response.rows);
 };
 
+export const fetchSurveyDataById = (id: number) => {
+  return db
+    .query("SELECT * FROM surveys WHERE id = $1", [id])
+    .then((response) => response.rows);
+};
+
 export function addAnswers(query) {
   return db.query(`INSERT INTO answers (answer,question_id) VALUES ${query}`);
 }
@@ -130,4 +136,33 @@ export const attachQuestionsToSurvey = (
     "INSERT INTO questions_surveys(question_id, survey_id) VALUES($1, $2) RETURNING id",
     [questionsID, surveyID]
   );
+};
+
+export const fetchSurvyes = (clientId: number) => {
+  return db
+    .query(`SELECT * FROM clients_surveys WHERE client_id=$1`, [clientId])
+    .then(({ rows }) => rows);
+};
+
+export const isOngoing = (clientId) => {
+  return db
+    .query(
+      `SELECT status FROM treatment WHERE status='on-going' AND client_id = $1`,
+      [clientId]
+    )
+    .then(({ rows }) => {
+      if (rows) {
+        return true;
+      }
+      return false;
+    });
+};
+
+export const fetchAvaliableSurveys = (clientId) => {
+  return db
+    .query(
+      `SELECT * from clients_surveys WHERE client_id = $1 AND is_done = 'false' AND has_missed = 'false'`,
+      [clientId]
+    )
+    .then(({ rows }) => rows);
 };

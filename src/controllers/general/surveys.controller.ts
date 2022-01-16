@@ -6,9 +6,43 @@ import {
   setQuestions,
   attachQuestionsToSurvey,
   addAnswers,
+  isOngoing,
+  fetchAvaliableSurveys,
+  fetchSurveyDataById,
 } from "../../models/surveys.models";
 import { catchAsync, ApiError, updateMatrices } from "../../utils";
 import httpStatus from "http-status";
+import moment from "moment";
+
+const getAvaliableSurveys = catchAsync(async (req, res) => {
+  let surveys = [];
+  const clientId = req.params.id;
+  if (!(await isOngoing(clientId))) {
+    res
+      .status(httpStatus.BAD_REQUEST)
+      .send({ status: "No on-going treatments for client" });
+  }
+
+  const clientSurveys = await fetchAvaliableSurveys(clientId);
+  const currDate = moment(moment().toDate()).format("L");
+
+  await Promise.all(
+    clientSurveys.map(async (survey) => {
+      const surveyData = await fetchSurveyDataById(survey.survey_id);
+      const surveyDate = moment(survey.survey_date).format("L");
+      if (currDate == surveyDate) {
+        const response = {
+          surveyId: survey.id,
+          surveyName: surveyData[0].name,
+        };
+        surveys.push(response);
+        return surveys;
+      }
+      return null;
+    })
+  );
+  res.status(httpStatus.OK).send(surveys);
+});
 
 const getSurveyById = catchAsync(async (req, res) => {
   let id = req.params.id;
@@ -129,4 +163,4 @@ const addSurvey = catchAsync(async (req, res) => {
     .send("The survey and it questions has been created successfully.");
 });
 
-export default { getSurveyById, addSurvey, insertAnswers };
+export default { getSurveyById, addSurvey, insertAnswers, getAvaliableSurveys };
