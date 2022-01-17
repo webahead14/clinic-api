@@ -53,7 +53,7 @@ const updateMissedJob = () =>
 // A cron job that runs every 5 minutes to check which clients/patients have surveys today
 // and decide when to send them a reminder for it (currently only supports email)
 const remindersJob = () =>
-  cron.schedule("* */5 * * * *", async function () {
+  cron.schedule("5 * * * * *", async function () {
     try {
       const treatments = await db
         .query(`SELECT * FROM treatment WHERE status='on-going'`)

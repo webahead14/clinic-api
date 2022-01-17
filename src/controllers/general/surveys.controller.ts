@@ -30,14 +30,15 @@ const getAvaliableSurveys = catchAsync(async (req, res) => {
     clientSurveys.map(async (survey) => {
       const surveyData = await fetchSurveyDataById(survey.survey_id);
       const surveyDate = moment(survey.survey_date).format("L");
-      if (currDate == surveyDate) {
-        const response = {
-          surveyId: survey.id,
-          surveyName: surveyData[0].name,
-        };
-        surveys.push(response);
-        return surveys;
-      }
+      // keep it under comment for presentations
+      // if (currDate == surveyDate) {
+      const response = {
+        surveyId: survey.id,
+        surveyName: surveyData[0].name,
+      };
+      surveys.push(response);
+      return surveys;
+      // }
       return null;
     })
   );
@@ -47,7 +48,6 @@ const getAvaliableSurveys = catchAsync(async (req, res) => {
 const getSurveyById = catchAsync(async (req, res) => {
   let id = req.params.id;
   const data = (await fetchSurveyById(id))[0];
-
   if (data.is_done)
     throw new ApiError(httpStatus.BAD_REQUEST, "Survey already done");
 
