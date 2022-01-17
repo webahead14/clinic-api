@@ -63,7 +63,7 @@ const getSurveyById = catchAsync(async (req, res) => {
 
     res.status(httpStatus.OK).send(data.survey_snapshot);
   } catch (err) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `${err}`);
+    throw new ApiError(httpStatus.BAD_REQUEST, `${err}`);
   }
 });
 
