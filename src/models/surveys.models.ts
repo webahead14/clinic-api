@@ -18,7 +18,7 @@ export const fetchMatrixById = (matrixId: number) => {
 export const fetchSurveyById = (id: number, lang: string = "en") => {
   return db
     .query("SELECT * FROM clients_surveys WHERE id = $1", [id])
-    .then((response) => response.rows);
+    .then(({ rows }) => rows[0]);
 };
 
 export const fetchSurveyDataById = (id: number) => {

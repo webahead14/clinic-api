@@ -7,7 +7,7 @@ import clinicController from "./controllers/clinics.controller";
 const router = express.Router();
 
 router.get("/", generalController.home);
-router.get("/client/survey/:id", generalController.getSurveyById);
+router.post("/client/survey/:id", generalController.getSurveyById);
 router.get("/clients", clientController.list);
 router.post("/client/login", clientController.login);
 router.post("/client/register", clientController.register);
