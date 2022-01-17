@@ -48,11 +48,11 @@ const getAvaliableSurveys = catchAsync(async (req, res) => {
 
 const getSurveyById = catchAsync(async (req, res) => {
   const id = req.params.id;
-  const language = req.body.language;
+  const { lang } = req.body;
   try {
     const data = await fetchSurveyById(id);
-    if (language !== "en") {
-      data.survey_snapshot = await fetchSurveyData(data.survey_id, language);
+    if (lang !== "en") {
+      data.survey_snapshot = await fetchSurveyData(data.survey_id, lang);
     }
 
     if (data.is_done)
