@@ -55,10 +55,10 @@ CREATE TABLE questions (
 CREATE TABLE questions_language (
     id SERIAL PRIMARY KEY,
     question_id INTEGER REFERENCES questions(id),
+    matrix_id INTEGER REFERENCES matrix(id),
     question varchar(255),
     type varchar(36),
     "group" varchar(60),
-    matrix_id INTEGER REFERENCES matrix(id),
     extra_data json,
     language varchar(2)
 );
@@ -112,10 +112,11 @@ CREATE TABLE questions_surveys(
 );
 
 INSERT INTO matrix (title,columns,answers,instructions) VALUES(
-    'do you feel bothered from:',
-    '["Poorly","Semi-Poorly","Avarage","Semi-Strongly","Strongly"]',
+    
+    'How much have you been bothered by:',
+    '["Poorly","Semi-Poorly","Average","Semi-Strongly","Strongly"]',
     '["0", "1", "2", "3", "4"]',
-    'Below is a list of problems and complaints that people sometimes have in response to stressful life experiences. How much you have been bothered by that problem IN THE LAST MONTH.'
+'Below is a list of problems that people sometimes have in response to a very stressful experience. Please read each problem carefully and then circle one of the numbers to indicate how much you have been bothered by that problem in the past month.'
 ),
 ( 
 'How much have you been bothered by:', 
@@ -139,15 +140,13 @@ INSERT INTO matrix_languages (matrix_id,title,columns,instructions,language) VAL
     '["نادرًا","قليلًا","بشكل متوسط","غالبًا","دائمًا"]',
     'فيما يلي قائمة بالمشكلات والشكاوي التي يواجهها الأشخاص أحيانًا بسبب تجارب حياتية مرهقة. ما مدى انزعاجك من كل مشكلة على حِدَةٍ في الشهر الماضي.',
     'ar'
-),
-(
+),(
     2,
     'כמה הפריע לך',
     '["אף פעם לא","לעיתים רחוקות","לפעמים","לעיתים תכופות","לעיתים תכופות מאוד"]',
     'להלן רשימה של בעיות שיש לאנשים לפעמים בתגובה לחוויה מלחיצה מאוד. אנא קרא כל בעיה בעיון ולאחר מכן הקף את אחד המספרים כדי לציין עד כמה הוטרדת מהבעיה הזו בחודש האחרון.',
     'he'
-),
-(
+),(
     2,
     'كم ازعجتك',
     '["نادرًا","قليلًا","بشكل متوسط","غالبًا","دائمًا"]',
@@ -159,16 +158,15 @@ INSERT INTO questions (question,type,"group",matrix_id,extra_data) VALUES
     ('Trouble remembering important parts of the stressful experience?','matrix','group_xyz',1,'{}'),
     ('Loss of interest in activities that you used to enjoy?','matrix','group_xyz',1,'{}'),
     ('Irritable behaviour, angry outbursts, or acting aggressively?','matrix','group_xyz',1,'{}'),
-    ('Which choice of the choices below you think it will impact your stress the most?','multiple_choice','group_xyz_multi1',null,'{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "Smoke"},{"text": "Exercise"},{"text": "Drink alcohol"},{"text": "Eat"}]}}'),
-    ('Mark the type of pains you''ve encountered lately:','multiple_choice','group_xyz_multi2',null,'{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "Physical Pain"},{"text": "Mental Pain"},{"text": "Spiritual Pain"}]}}'),
-    ('Anything else?','open_text','group_xyz_open',null,'{"openText": {"inputPlaceholder": "Please write the answer here"}}'),
+    ('In your opinion, which of the following choices impact your stress the most?','multiple_choice','group_xyz_multi1',null,'{"multipleChoice":{"choiceType": "Radio","answers": [{"text": "Smoking"},{"text": "Exercising"},{"text": "Drinking alcohol"},{"text": "Eating"}]}}'),
+    ('Mark the type of pain you''ve experienced lately:','multiple_choice','group_xyz_multi2',null,'{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "Physical Pain"},{"text": "Mental Pain"},{"text": "Spiritual Pain"}]}}'),
+    ('Would you like to tell us anything else?','open_text','group_xyz_open',null,'{"openText": {"inputPlaceholder": "Please write the answer here"}}'),
     ('Repeated, disturbing, and unwanted memories of the stressful experience?','matrix','group_wyz',2,'{}'),
-    ('Feeling very upset when something reminds you of the stressful experience?','matrix','group_wyz',2,'{}'),
+    ('Having difficulty concentrating?','matrix','group_wyz',2,'{}'),
     ('Having strong negative beliefs about yourself, other people, or the world (for example, having thoughts such as: "I am bad", "there is something seriously wrong with me", "no one can be trusted", "the world is completely dangerous")?','matrix','group_wyz',2,'{}'),
-    ('Loss of interest in activities that you used to enjoy?','matrix','group_wyz',2,'{}'
+    ('Trouble falling or staying asleep?','matrix','group_wyz',2,'{}'
 );
-
-INSERT INTO questions_language (question_id, question, type, "group", matrix_id, extra_data,language) VALUES
+INSERT INTO questions_language (question_id, question,type,"group",matrix_id, extra_data,language) VALUES
     (1,'מרגישים מוטרדים מאוד כשמשהו מזכיר לכם את החוויה המלחיצה?','matrix','group_xyz',1,'{}','he'),
     (2,'מתקשים לזכור חלקים חשובים מהחוויה המלחיצה?','matrix','group_xyz',1,'{}','he'),
     (3,'אובדן עניין בפעילויות שנהניתם מהן?','matrix','group_xyz',1,'{}','he'),
@@ -177,9 +175,9 @@ INSERT INTO questions_language (question_id, question, type, "group", matrix_id,
     (6,'סמן את סוג הכאבים שנתקלת בהם לאחרונה:','multiple_choice','group_xyz_multi2',null,'{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "כאב פיזי"},{"text": "כאב נפשי"},{"text": "כאב רוחני"}]}}','he'),
     (7,'עוד משהו להוסיף?','open_text','group_xyz_open',null,'{"openText": {"inputPlaceholder": "נא לכתוב כאן את התשובה"}}','he'),
     (8,'זיכרונות חוזרים, מטרידים ולא רצויים מהחוויה המלחיצה?','matrix','group_wyz',2,'{}','he'),
-    (9,'להרגיש מוטרד כשמשהו מזכיר לך את החוויה המלחיצה?','matrix','group_wyz',2,'{}','he'),
+    (9,'מתקשים להתרכז?','matrix','group_wyz',2,'{}','he'),
     (10,'בעל אמונות שליליות חזקות לגבי עצמך, אנשים אחרים או העולם לדוגמה, מחשבות כגון: "אני רע", "יש משהו לא בסדר איתי", "אי אפשר לסמוך על אף אחד", "העולם הוא מסוכן לחלוטין"?','matrix','group_wyz',2,'{}','he'),
-    (11,'אובדן עניין בפעילויות שנהנית מהן בעבר?','matrix','group_wyz',2,'{}', 'he'
+    (11,'קשיי נפילה או שמירה על שינה?','matrix','group_wyz',2,'{}','he'
 ),
     (1,'هل تشعر بالضيق الشديد عندما تتذكر معاناة الضغوطات الحياتية؟','matrix','group_xyz',1,'{}','ar'),
     (2,'هل تواجه صعوبة في تذكر أجزاء مهمة من معاناة الضغوطات الحياتية التي خضتها؟','matrix','group_xyz',1,'{}','ar'),
@@ -189,9 +187,9 @@ INSERT INTO questions_language (question_id, question, type, "group", matrix_id,
     (6,'حدد نوع الآلام التي واجهتها مؤخرًا:','multiple_choice','group_xyz_multi2',null,'{"multipleChoice": {"choiceType": "Checkbox","answers": [{"text": "ألم جسدي"},{"text": "ألم نفسي"},{"text": "ألم روحاني"}]}}','ar'),
     (7,'أي شيء آخر؟','open_text','group_xyz_open',null,'{"openText": {"inputPlaceholder": "من فضلك اكتب الجواب هنا"}}','ar'),
     (8,'ذكريات متكررة, مزعجة وغير مرغوب فيها للتجربة المرهقة؟','matrix','group_wyz',2,'{}','ar'),
-    (9,'الشعور بالضيق الشديد عندما يذكرك شيء بالتجربة المرهقة؟','matrix','group_wyz',2,'{}','ar'),
+    (9,'تجدون صعوبة في التركيز؟','matrix','group_wyz',2,'{}','ar'),
     (10,'امتلاك معتقدات سلبية قوية عن نفسك, عن الآخرين أو العالم؟ (على سبيل المثال ، وجود أفكار مثل: "أنا سيء" ، "يوجد خطأ بيي" ، "لا يمكنني الوثوق بأي شخص" ، "العالم خطير جدا"','matrix','group_wyz',2,'{}','ar'),
-    (11,'فقدان الاهتمام بالأنشطة التي كنت تستمتع بها؟','matrix','group_wyz',2,'{}', 'ar'
+    (11,'مشكلة في النوم أو البقاء في النوم','matrix','group_wyz',2,'{}', 'ar'
 );
 INSERT INTO surveys(name) VALUES 
     ('PCL-5');
