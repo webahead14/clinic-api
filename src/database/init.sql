@@ -193,12 +193,12 @@ INSERT INTO questions_language (question_id, question,type,"group",matrix_id, ex
 );
 INSERT INTO surveys(name) VALUES 
     ('PCL-5');
---     ('GAD'),
---     ('PHQ'),
---     ('PGI-S'),
---     ('PGI-A'),
---     ('PGI-T'
--- );
+    ('GAD'),
+    ('PHQ'),
+    ('PGI-S'),
+    ('PGI-A'),
+    ('PGI-T'
+);
 
 INSERT INTO questions_surveys (question_id, survey_id) VALUES
     (1, 1),
