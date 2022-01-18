@@ -15,10 +15,10 @@ export const fetchMatrixById = (matrixId: number) => {
     .then((response) => response.rows);
 };
 
-export const fetchSurveyById = (id: number) => {
+export const fetchSurveyById = (id: number, lang: string = "en") => {
   return db
     .query("SELECT * FROM clients_surveys WHERE id = $1", [id])
-    .then((response) => response.rows);
+    .then(({ rows }) => rows[0]);
 };
 
 export const fetchSurveyDataById = (id: number) => {
@@ -36,7 +36,7 @@ export function fetchMatrix(id: number, lang: string = "en") {
   if (lang === "en")
     return db
       .query("SELECT * FROM matrix WHERE id = $1", [id])
-      .then((matrix) => matrix.rows[0]);
+      .then((matrix) => matrix.rows);
   else {
     return db
       .query(
@@ -44,7 +44,7 @@ export function fetchMatrix(id: number, lang: string = "en") {
             ON matrix.id = matrix_languages.matrix_id WHERE matrix.id = $1 AND matrix_languages.language = $2`,
         [id, lang]
       )
-      .then((matrix) => matrix.rows[0]);
+      .then((matrix) => matrix.rows);
   }
 }
 

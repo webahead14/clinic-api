@@ -1,3 +1,4 @@
+import fetchSurveyData from "../../services/survey.service";
 import {
   fetchSurveyById,
   setSurvey,
@@ -46,15 +47,24 @@ const getAvaliableSurveys = catchAsync(async (req, res) => {
 });
 
 const getSurveyById = catchAsync(async (req, res) => {
-  let id = req.params.id;
-  const data = (await fetchSurveyById(id))[0];
-  if (data.is_done)
-    throw new ApiError(httpStatus.BAD_REQUEST, "Survey already done");
+  const id = req.params.id;
+  const { lang } = req.body;
+  try {
+    const data = await fetchSurveyById(id);
+    if (lang !== "en") {
+      data.survey_snapshot = await fetchSurveyData(data.survey_id, lang);
+    }
 
-  if (data.has_missed)
-    throw new ApiError(httpStatus.BAD_REQUEST, "Survey was missed");
+    if (data.is_done)
+      throw new ApiError(httpStatus.BAD_REQUEST, "Survey already done");
 
-  res.status(httpStatus.OK).send(data.survey_snapshot);
+    if (data.has_missed)
+      throw new ApiError(httpStatus.BAD_REQUEST, "Survey was missed");
+
+    res.status(httpStatus.OK).send(data.survey_snapshot);
+  } catch (err) {
+    throw new ApiError(httpStatus.BAD_REQUEST, `${err}`);
+  }
 });
 
 const insertAnswers = catchAsync(async (req, res) => {

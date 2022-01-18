@@ -1,15 +1,15 @@
-import {
-  fetchMatrixById,
-  fetchQuestionsBySurveyId,
-} from "../models/surveys.models";
+import { fetchQuestions, fetchMatrix } from "../models/surveys.models";
 
-export const fetchSurveyData = async (surveyId: number = 1) => {
+export const fetchSurveyData = async (
+  surveyId: number = 1,
+  lang: string = "en"
+) => {
   const groupsFound = [];
-  let questionsData = await fetchQuestionsBySurveyId(surveyId);
+  let questionsData = await fetchQuestions(surveyId, lang);
   let survey = await Promise.all(
     questionsData.map(async (data) => {
       if (data.type === "matrix") {
-        const matrixData = await fetchMatrixById(data.matrix_id);
+        const matrixData = await fetchMatrix(data.matrix_id, lang);
 
         const isGroupFound = groupsFound.findIndex(
           (element) => element === data.group
@@ -41,7 +41,7 @@ export const fetchSurveyData = async (surveyId: number = 1) => {
 
       if (data.type === "multiple_choice") {
         return {
-          id: data.id,
+          id: data.question_id,
           type: data.type,
           question: data.question,
           ...data["extra_data"].multipleChoice,
@@ -50,7 +50,7 @@ export const fetchSurveyData = async (surveyId: number = 1) => {
 
       if (data.type === "open_text") {
         return {
-          id: data.id,
+          id: data.question_id,
           type: data.type,
           question: data.question,
           placeholder: data.extra_data.openText.inputPlaceholder,

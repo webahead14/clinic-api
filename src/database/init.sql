@@ -79,7 +79,7 @@ CREATE TABLE clients (
 
 CREATE TABLE treatment(
     id SERIAL PRIMARY KEY,
-    client_id INTEGER,
+    client_id INTEGER REFERENCES clients(id),
     protocol_id INTEGER REFERENCES protocols(id),
     start_date DATE,
     status treatment_status DEFAULT 'on-going',
@@ -125,6 +125,7 @@ INSERT INTO matrix (title,columns,answers,instructions) VALUES(
 'Below is a list of problems that people sometimes have in response to a very stressful experience. Please read each problem carefully and then circle one of the numbers to indicate how much you have been bothered by that problem in the past month.'
 );
 
+
 INSERT INTO matrix_languages (matrix_id,title,columns,instructions,language) VALUES
 (
     1,
@@ -152,7 +153,6 @@ INSERT INTO matrix_languages (matrix_id,title,columns,instructions,language) VAL
     'فيما يلي قائمة بالمشكلات التي يواجهها الأشخاص أحيانًا استجابة لتجربة مرهقة للغاية. الرجاء قراءة كل مشكلة بعناية ثم قم بتحويط أحد الأرقام للإشارة إلى مدى إزعاجك بهذه المشكلة في الشهر الماضي.',
     'ar'
 );
-
 INSERT INTO questions (question,type,"group",matrix_id,extra_data) VALUES
     ('Feeling very upset when something reminds you of the stressful experience?','matrix','group_xyz',1,'{}'),
     ('Trouble remembering important parts of the stressful experience?','matrix','group_xyz',1,'{}'),
@@ -191,9 +191,8 @@ INSERT INTO questions_language (question_id, question,type,"group",matrix_id, ex
     (10,'امتلاك معتقدات سلبية قوية عن نفسك, عن الآخرين أو العالم؟ (على سبيل المثال ، وجود أفكار مثل: "أنا سيء" ، "يوجد خطأ بيي" ، "لا يمكنني الوثوق بأي شخص" ، "العالم خطير جدا"','matrix','group_wyz',2,'{}','ar'),
     (11,'مشكلة في النوم أو البقاء في النوم','matrix','group_wyz',2,'{}', 'ar'
 );
-
 INSERT INTO surveys(name) VALUES 
-    ('PCL-5'),
+    ('PCL-5');
     ('GAD'),
     ('PHQ'),
     ('PGI-S'),
