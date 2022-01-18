@@ -192,7 +192,7 @@ INSERT INTO questions_language (question_id, question,type,"group",matrix_id, ex
     (11,'مشكلة في النوم أو البقاء في النوم','matrix','group_wyz',2,'{}', 'ar'
 );
 INSERT INTO surveys(name) VALUES 
-    ('PCL-5');
+    ('PCL-5'),
     ('GAD'),
     ('PHQ'),
     ('PGI-S'),
