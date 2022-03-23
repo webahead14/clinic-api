@@ -3,6 +3,7 @@ import express from "express";
 import generalController from "./controllers/general";
 import clientController from "./controllers/clients.controller";
 import clinicController from "./controllers/clinics.controller";
+import AppointmentsController from "./controllers/general/Appointments.controller";
 
 const router = express.Router();
 
@@ -19,5 +20,7 @@ router.get("/clinic/protocols", clinicController.getProtocols);
 router.get("/clinic/surveys", clinicController.getSurveys);
 router.post("/clinic/client/update", clinicController.updateClientData);
 router.get("/client/surveys/:id", generalController.avaliableSurveys);
+router.get("/clinic/Appointments", AppointmentsController.getAppointments);
+router.post("/clinic/Appointment/add", generalController.addAppointments);
 
 export default router;
