@@ -1,5 +1,9 @@
 import { catchAsync, ApiError, deleteProps, sendMail } from "../utils";
-import { fetchProtocols, fetchSurveys } from "../models/clinics.model";
+import {
+  fetchProtocols,
+  fetchSurveys,
+  fetchAppointments,
+} from "../models/clinics.model";
 import httpStatus from "http-status";
 import dotenv from "dotenv";
 import passcodeGenerator from "generate-password";
@@ -201,6 +205,7 @@ const updateClientData = catchAsync(async (req: any, res: any) => {
     .status(200)
     .send({ success: true, message: "succeded in updating the client data" });
 });
+
 export default {
   updateClientData: updateClientData,
   getProtocols: getAllProtocols,

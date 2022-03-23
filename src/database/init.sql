@@ -1,6 +1,6 @@
 BEGIN;
 
-DROP TABLE IF EXISTS protocols_surveys,questions,questions_language,matrix,matrix_languages,surveys,protocols,clients,clients_surveys,questions_surveys,answers,treatment CASCADE;
+DROP TABLE IF EXISTS protocols_surveys,questions,questions_language,matrix,matrix_languages,surveys,protocols,clients,clients_surveys,questions_surveys,answers,treatment,appointments CASCADE;
 DROP TYPE IF EXISTS treatment_status CASCADE;
 
 CREATE TYPE treatment_status AS ENUM ('on-going', 'finished');
@@ -111,6 +111,14 @@ CREATE TABLE questions_surveys(
     survey_id INTEGER REFERENCES surveys(id)
 );
 
+CREATE TABLE appointments(
+    --patient varchar,
+    appointment_date DATE,
+    start_Hour TIME,
+    end_Hour TIME,
+    client_id  INTEGER --REFERENCES clients(id)
+);
+
 INSERT INTO matrix (title,columns,answers,instructions) VALUES(
     
     'How much have you been bothered by:',
@@ -214,6 +222,18 @@ INSERT INTO questions_surveys (question_id, survey_id) VALUES
     (11, 1
 );
 
+INSERT INTO clients( passcode,time_passcode,time_passcode_expiry,gov_id,condition,deleted,phone,email,name,gender) VALUES 
+('1','2','12/12/2022 12:12:12','govid','PTSD',false,'+972543198210','John_Doe@mail.com','John Doe','male'),
+('2','3','12/12/2022 12:12:12','govid2','Anxiety',false,'0542198230','Mary_Smith@mail.com','Mary Smith','female'),
+('3','4','12/12/2022 12:12:12','govid3','ADHD',false,'+123232323524','Ben_Davis@mail.com','Ben Davis','male');
+
+INSERT INTO appointments(appointment_date, start_Hour, end_Hour,client_id) VALUES 
+    (TO_DATE('04/03/2022', 'DD/MM/YYYY'), '12:00', '14:00',1),
+    (TO_DATE('14/03/2022', 'DD/MM/YYYY') , '18:00', '20:00',1),
+    (TO_DATE('10/03/2022', 'DD/MM/YYYY'), '12:00', '14:00',1),
+    (TO_DATE('24/03/2022', 'DD/MM/YYYY') , '12:00', '14:00',1);
+
+
 -- INSERT INTO protocols(name,condition) VALUES
 --     ('PCL-5','PTSD'),
 --     ('GAD','Anxiety'),
@@ -244,5 +264,6 @@ INSERT INTO questions_surveys (question_id, survey_id) VALUES
 -- INSERT INTO clients_surveys(client_id, survey_id, treatment_id, is_done, is_partially_done, has_missed, survey_snapshot)
 -- VALUES
 -- (1, 1, 1, false, false, false, '[{"type":"matrix","title":"Do you feel bothered from:","columns":["Poorly","Semi-Poorly","Avarage","Semi-Strongly","Strongly"],"answers":["0","1","2","3","4"],"instructions":"Below is a list of problems and complaints that people sometimes have in response to stressful life experiences. How much you have been bothered by that problem IN THE LAST MONTH.","questions":[{"id":"1","question":"Feeling very upset when something reminds you of the stressful experience?"},{"id":"2","question":"Trouble remembering important parts of the stressful experience?"},{"id":"3","question":"Loss of interest in activities that you used to enjoy?"},{"id":"4","question":"Irritable behaviour, angry outbursts, or acting aggressively??"}]},{"id":"5","type":"multiple_choice","choice_type":"Radio","question":"Which choice of the choices below you think it will impact you stress the most?","answers":[{"text":"Smoke"},{"text":"Exercide"},{"text":"Drink"},{"text":"Eat"}]},{"id":"6","type":"multiple_choice","choice_type":"Checkbox","question":"Mark the type of injuries you''ve encountered lately:","answers":[{"text":"Physical Pain"},{"text":"Mental Pain"},{"text":"Spiritual Pain"}]},{"type":"open_text","id":"7","question":"Anything else?","placeholder":"Enter your answer here"}]');
+
 
 COMMIT;
